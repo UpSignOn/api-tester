@@ -3,14 +3,16 @@ const testConfig = require("./src/test-config");
 const testButtonConfig = require("./src/test-button-config");
 const testCreateAccount = require("./src/test-create-account");
 const { testConnectErrorCases, testConnect } = require("./src/test-connect");
+const testUpdateData = require("./src/test-update-data");
 
 testConfig()
   .then(testButtonConfig)
   .then(testConnectErrorCases)
   .then(testCreateAccount)
-  .then((credentials) => {
+  .then(async (credentials) => {
     if (credentials.userId) {
-      testConnect(credentials);
+      await testConnect(credentials);
+      await testUpdateData(credentials);
     }
   })
   .catch((e) => {

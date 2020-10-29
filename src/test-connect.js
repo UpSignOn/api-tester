@@ -40,8 +40,21 @@ const testConnect = async (credentials) => {
     /^[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}$/.test(body.connectionToken)
   );
   check("response should contain a 'redirectionUri'", !!body.redirectionUri);
-  const uriResponse = await head(body.redirectionUri);
-  check("'redirectionUri' should return 200 on GET", uriResponse.status === 200);
+
+  let uriResponse = await head(body.redirectionUri);
+  check("'redirectionUri' should not return a 200 on GET without token", uriResponse.status !== 200);
+  uriResponse = await head(body.redirectionUri + "?userId=" + credentials.userId + "&connectionToken=falseToken");
+  check("'redirectionUri' should not return a 200 on GET with a bad token", uriResponse.status !== 200);
+
+  uriResponse = await head(
+    body.redirectionUri + "?userId=" + credentials.userId + "&connectionToken=" + body.connectionToken
+  );
+  check("'redirectionUri' should return a 200 on GET with a good token", uriResponse.status === 200);
+
+  uriResponse = await head(
+    body.redirectionUri + "?userId=" + credentials.userId + "&connectionToken=" + body.connectionToken
+  );
+  check("'redirectionUri' should not return a 200 on GET with a reused token", uriResponse.status !== 200);
 };
 
 module.exports = {

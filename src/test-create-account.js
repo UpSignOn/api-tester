@@ -20,7 +20,20 @@ module.exports = async function () {
 
   response = await post("/create-account", { body: JSON.stringify({ password: "password" }) });
   check("returns a 200 or a 403", response.status === 403 || response.status === 200);
-  const body = await attempt("returns a JSON body", response.json());
+  let body = await attempt("returns a JSON body", response.json());
+  check(
+    "returns a 'userId' if status is 200 or a 'message' if status is 403",
+    (response.status === 200 && !!body.userId) || (response.status === 403 && !!body.message)
+  );
+
+  response = await post("/create-account", {
+    body: JSON.stringify({
+      password: "password",
+      data: [{ type: "email", key: "email1", value: { address: "test@test.com" } }],
+    }),
+  });
+  check("returns a 200 or a 403", response.status === 403 || response.status === 200);
+  body = await attempt("returns a JSON body", response.json());
   check(
     "returns a 'userId' if status is 200 or a 'message' if status is 403",
     (response.status === 200 && !!body.userId) || (response.status === 403 && !!body.message)
