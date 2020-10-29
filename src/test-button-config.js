@@ -49,22 +49,14 @@ const testButtonConfigResponse = async (response, config) => {
 
 module.exports = async function () {
   displayBold("Testing /button-config");
-  try {
-    const configResponse = await get("/config");
-    const config = await configResponse.json();
-    for (let i = 0; i < buttonIds.length; i++) {
-      const buttonId = buttonIds[i];
-      const response = await get("/button-config?buttonId=" + buttonId);
-      await testButtonConfigResponse(response, config);
-    }
-
-    const response = await get("/button-config?buttonId=unknown");
-    check("returns 404 for unknown buttonId", response.status === 404);
-  } catch (e) {
-    console.log(e);
-    displayError(
-      0,
-      "Server is unreachable. Do you have a valid internet connection? (Or maybe this a bug with the tester itself)"
-    );
+  const configResponse = await get("/config");
+  const config = await configResponse.json();
+  for (let i = 0; i < buttonIds.length; i++) {
+    const buttonId = buttonIds[i];
+    const response = await get("/button-config?buttonId=" + buttonId);
+    await testButtonConfigResponse(response, config);
   }
+
+  const response = await get("/button-config?buttonId=unknown");
+  check("returns 404 for unknown buttonId", response.status === 404);
 };

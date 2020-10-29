@@ -30,6 +30,11 @@ const attempt = async (testName, promise) => {
   }
 };
 
+const head = (uri) => {
+  return fetch(uri, {
+    method: "HEAD",
+  });
+};
 const get = (route) => {
   console.log(`   - ${route}`);
   return fetch(`${url}${route}`, {
@@ -84,6 +89,7 @@ module.exports = {
   fieldTypes,
   check,
   attempt,
+  head,
   get,
   post,
   displayBold,

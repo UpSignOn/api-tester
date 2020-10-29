@@ -8,9 +8,16 @@ testConfig()
   .then(testButtonConfig)
   .then(testConnectErrorCases)
   .then(testCreateAccount)
-  .then((userId) => {
-    if (userId) {
-      testConnect();
+  .then((credentials) => {
+    if (credentials.userId) {
+      testConnect(credentials);
     }
+  })
+  .catch((e) => {
+    console.log(e);
+    displayError(
+      0,
+      "Server is unreachable. Do you have a valid internet connection? (Or maybe this a bug with the tester itself)"
+    );
   })
   .then(showFinalMessageAndExit);

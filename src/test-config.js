@@ -1,4 +1,5 @@
 const {
+  head,
   get,
   displayBold,
   displayError,
@@ -36,57 +37,55 @@ const testConfigResponse = async (response) => {
       )
     );
     check("result contains 'legalTerms'", !!body.legalTerms);
-    check("'legalTerms' is of type array", Array.isArray(body.legalTerms));
-    check(
-      "each legalTerm has an 'id', a 'date', a 'link' and a 'translatedText'",
-      !body.legalTerms.find((l) => !l.id || !l.date || !l.link || !l.translatedText)
-    );
-    check(
-      "each legalTerm has a unique 'id'",
-      !body.legalTerms.some((l) => body.legalTerms.filter((m) => m.id === l.id).length !== 1)
-    );
-    check(
-      "each legalTerm has a unique 'link'",
-      !body.legalTerms.some((l) => body.legalTerms.filter((m) => m.link === l.link).length !== 1)
-    );
-    check(
-      "each legalTerm has a unique 'translatedText'",
-      !body.legalTerms.some((l) => body.legalTerms.filter((m) => m.translatedText === l.translatedText).length !== 1)
-    );
-    check(
-      "no legalTerm has non-standard object keys",
-      !body.legalTerms.some((l) => Object.keys(l).some((k) => !["id", "date", "link", "translatedText"].includes(k)))
-    );
-    /**
-     * TODO
-     * - test legalTermsdate is a valid date
-     * - test the link with a Head request
-     */
+    if (body.legalTerms) {
+      check("'legalTerms' is of type array", Array.isArray(body.legalTerms));
+      check(
+        "each legalTerm has an 'id', a 'date', a 'link' and a 'translatedText'",
+        !body.legalTerms.find((l) => !l.id || !l.date || !l.link || !l.translatedText)
+      );
+      check(
+        "each legalTerm has a unique 'id'",
+        !body.legalTerms.some((l) => body.legalTerms.filter((m) => m.id === l.id).length !== 1)
+      );
+      check(
+        "each legalTerm has a unique 'link'",
+        !body.legalTerms.some((l) => body.legalTerms.filter((m) => m.link === l.link).length !== 1)
+      );
+      check(
+        "each legalTerm has a unique 'translatedText'",
+        !body.legalTerms.some((l) => body.legalTerms.filter((m) => m.translatedText === l.translatedText).length !== 1)
+      );
+      check(
+        "no legalTerm has non-standard object keys",
+        !body.legalTerms.some((l) => Object.keys(l).some((k) => !["id", "date", "link", "translatedText"].includes(k)))
+      );
+      for (let i = 0; i < body.legalTerms.length; i++) {
+        const legalTerm = body.legalTerms[i];
+        const linkResponse = await head(legalTerm.link);
+        check(legalTerm.translatedText + " - Legal term's link returns a 200 on a GET", linkResponse.status === 200);
+      }
+      /**
+       * TODO
+       * - test legalTermsdate is a valid date
+       */
+    }
   }
 };
 
 module.exports = async function () {
   displayBold("Testing /config");
-  try {
-    let response = await get("/config?lang=fr");
-    await testConfigResponse(response);
+  let response = await get("/config?lang=fr");
+  await testConfigResponse(response);
 
-    response = await get("/config?lang=fr-BE");
-    await testConfigResponse(response);
+  response = await get("/config?lang=fr-BE");
+  await testConfigResponse(response);
 
-    response = await get("/config?lang=");
-    await testConfigResponse(response);
+  response = await get("/config?lang=");
+  await testConfigResponse(response);
 
-    response = await get("/config?lang=unknown");
-    await testConfigResponse(response);
+  response = await get("/config?lang=unknown");
+  await testConfigResponse(response);
 
-    response = await get("/config");
-    await testConfigResponse(response);
-  } catch (e) {
-    console.log(e);
-    displayError(
-      0,
-      "Server is unreachable. Do you have a valid internet connection? (Or maybe this a bug with the tester itself)"
-    );
-  }
+  response = await get("/config");
+  await testConfigResponse(response);
 };
