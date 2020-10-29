@@ -30,9 +30,9 @@ const attempt = async (testName, promise) => {
   }
 };
 
-const get = (route, body) => {
+const get = (route) => {
+  console.log(`   - ${route}`);
   return fetch(`${url}${route}`, {
-    ...body,
     method: "GET",
     headers: {
       Accept: "application/json",
@@ -41,6 +41,7 @@ const get = (route, body) => {
   });
 };
 const post = (route, body) => {
+  console.log(`   - ${route} ${!!body ? body.body : "no body"}`);
   return fetch(`${url}${route}`, {
     ...body,
     method: "POST",

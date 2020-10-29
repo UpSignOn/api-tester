@@ -1,6 +1,5 @@
 const {
   get,
-  post,
   displayBold,
   displayError,
   displayErrorTitle,
@@ -69,24 +68,19 @@ const testConfigResponse = async (response) => {
 module.exports = async function () {
   displayBold("Testing /config");
   try {
-    console.log("   - /config?lang=fr");
-    let response = await get("/config?lang=fr", {});
+    let response = await get("/config?lang=fr");
     await testConfigResponse(response);
 
-    console.log("   - /config?lang=fr-BE");
-    response = await get("/config?lang=fr-BE", {});
+    response = await get("/config?lang=fr-BE");
     await testConfigResponse(response);
 
-    console.log("   - /config?lang=");
-    response = await get("/config?lang=", {});
+    response = await get("/config?lang=");
     await testConfigResponse(response);
 
-    console.log("   - /config?lang=unknown");
-    response = await get("/config?lang=unknown", {});
+    response = await get("/config?lang=unknown");
     await testConfigResponse(response);
 
-    console.log("   - /config");
-    response = await get("/config", {});
+    response = await get("/config");
     await testConfigResponse(response);
   } catch (e) {
     console.log(e);

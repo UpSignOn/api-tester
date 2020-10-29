@@ -1,7 +1,6 @@
 const { buttonIds } = require("../context");
 const {
   get,
-  post,
   displayBold,
   displayError,
   displayErrorTitle,
@@ -55,13 +54,11 @@ module.exports = async function () {
     const config = await configResponse.json();
     for (let i = 0; i < buttonIds.length; i++) {
       const buttonId = buttonIds[i];
-      console.log("   - /button-config?buttonId=" + buttonId);
-      const response = await get("/button-config?buttonId=" + buttonId, {});
+      const response = await get("/button-config?buttonId=" + buttonId);
       await testButtonConfigResponse(response, config);
     }
 
-    console.log("   - /button-config?buttonId=unknown");
-    const response = await get("/button-config?buttonId=unknown", {});
+    const response = await get("/button-config?buttonId=unknown");
     check("returns 404 for unknown buttonId", response.status === 404);
   } catch (e) {
     console.log(e);
