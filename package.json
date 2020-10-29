@@ -1,0 +1,13 @@
+{
+  "name": "api-tester",
+  "version": "1.0.0",
+  "license": "",
+  "private": false,
+  "scripts": {
+    "run": "node ./index.js"
+  },
+  "dependencies": {
+    "node-fetch": "^2.6.1"
+  },
+  "devDependencies": {}
+}
