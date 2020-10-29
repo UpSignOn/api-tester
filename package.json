@@ -1,7 +1,7 @@
 {
   "name": "api-tester",
   "version": "1.0.0",
-  "license": "",
+  "license": "UNLICENSED",
   "private": false,
   "scripts": {
     "run": "node ./index.js"
