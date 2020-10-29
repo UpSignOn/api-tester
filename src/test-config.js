@@ -58,6 +58,11 @@ const testConfigResponse = async (response) => {
       "no legalTerm has non-standard object keys",
       !body.legalTerms.some((l) => Object.keys(l).some((k) => !["id", "date", "link", "translatedText"].includes(k)))
     );
+    /**
+     * TODO
+     * - test legalTermsdate is a valid date
+     * - test the link with a Head request
+     */
   }
 };
 
@@ -68,8 +73,8 @@ module.exports = async function () {
     let response = await get("/config?lang=fr", {});
     await testConfigResponse(response);
 
-    console.log("   - /config?lang=fr-be");
-    response = await get("/config?lang=fr-be", {});
+    console.log("   - /config?lang=fr-BE");
+    response = await get("/config?lang=fr-BE", {});
     await testConfigResponse(response);
 
     console.log("   - /config?lang=");

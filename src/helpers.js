@@ -64,7 +64,6 @@ const displayErrorTitle = (increment, message) => {
 };
 const displaySuccessTitle = (increment, message) => {
   console.log("   ".repeat(increment), "\x1b[42m", message, "\x1b[0m");
-  ALL_TESTS_PASS = false;
 };
 const displaySuccess = (message) => {
   console.log("\x1b[32m", message, "\x1b[0m");
