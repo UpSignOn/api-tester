@@ -146,12 +146,12 @@ module.exports = async function () {
     }),
   });
   check("returns a 200 when currentPassword matches currentLogin", response.status === 200);
-  let body = await attempt("returns a JSON body when currentPassword matches currentLogin", response.json());
-  if (body) {
-    await checkConversionResult(body);
+  const body1 = await attempt("returns a JSON body when currentPassword matches currentLogin", response.json());
+  if (body1) {
+    await checkConversionResult(body1);
     await post("/update-password", {
       body: JSON.stringify({
-        userId: body.userId,
+        userId: body1.userId,
         password: "newPasswordForConversion",
         newPassword: validUserWithLogin.currentPassword,
       }),
@@ -165,12 +165,12 @@ module.exports = async function () {
     }),
   });
   check("returns a 200 when connectiontoken is valid", response.status === 200);
-  body = await attempt("returns a JSON body when connnectionToken is valid", response.json());
-  if (body) {
-    await checkConversionResult(body);
+  const body2 = await attempt("returns a JSON body when connnectionToken is valid", response.json());
+  if (body2) {
+    await checkConversionResult(body2);
     await post("/update-password", {
       body: JSON.stringify({
-        userId: body.userId,
+        userId: body2.userId,
         password: "newPasswordForConversion",
         newPassword: validUserWithLogin.currentPassword,
       }),
@@ -178,5 +178,5 @@ module.exports = async function () {
   }
 
   // TODO check that the partner stores the data with a route that gets all the data
-  return { userId: body?.userId, password: "newPasswordForConversion" };
+  return { userId: body1?.userId || body2?.userId, password: "newPasswordForConversion" };
 };
