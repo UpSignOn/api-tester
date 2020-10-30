@@ -33,8 +33,9 @@ module.exports = async function (credentials) {
   });
   check("returns a 200 for unkown userId", response.status === 200);
   let body = await attempt("returns a JSON body for unknown userId", response.json());
-  if (body) check("returns 'deletionStatus: DONE' with an unknown userId", body.deletionStatus === "DONE");
-
+  if (body) {
+    check("returns 'deletionStatus: DONE' with an unknown userId", body.deletionStatus === "DONE");
+  }
   response = await post("/delete-account-and-data", {
     body: JSON.stringify(credentials),
   });

@@ -15,7 +15,7 @@ const runTests = async () => {
     await testButtonConfig();
     await testConnectErrorCases();
     const credentials = await testCreateAccount();
-    if (credentials.userId) {
+    if (credentials && credentials.userId) {
       await testConnect(credentials);
       await testUpdateData(credentials);
       const newCredentials = await testUpdatePassword(credentials);
@@ -25,7 +25,7 @@ const runTests = async () => {
       }
     }
     const convertedAcountCredentials = await testConvertAccount();
-    if (credentials.userId) {
+    if (credentials && credentials.userId) {
       await testConnect(credentials);
       await testUpdateData(credentials);
       const newCredentials = await testUpdatePassword(credentials);

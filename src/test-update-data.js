@@ -45,7 +45,9 @@ module.exports = async function (credentials) {
   check("returns a 200 or a 403", response.status === 403 || response.status === 200);
   if (response.status === 403) {
     const body = await attempt("returns a JSON body if request status is 403", response.json());
-    check("returns a 'message' if status is 403", !!body.message);
+    if (body) {
+      check("returns a 'message' if status is 403", !!body.message);
+    }
   }
 
   // TODO check that the partner stores the data with a route that gets all the data

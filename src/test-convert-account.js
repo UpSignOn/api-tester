@@ -168,15 +168,14 @@ module.exports = async function () {
   const body2 = await attempt("returns a JSON body when connnectionToken is valid", response.json());
   if (body2) {
     await checkConversionResult(body2);
-    await post("/update-password", {
-      body: JSON.stringify({
-        userId: body2.userId,
-        password: "newPasswordForConversion",
-        newPassword: validUserWithLogin.currentPassword,
-      }),
-    });
   }
 
+  // TODO check against config fields ?
   // TODO check that the partner stores the data with a route that gets all the data
-  return { userId: body1?.userId || body2?.userId, password: "newPasswordForConversion" };
+  if (body1) {
+    return { userId: body1.userId, password: validUserWithLogin.currentPassword };
+  }
+  if (body2) {
+    return { userId: body2.userId, password: "newPasswordForConversion" };
+  }
 };

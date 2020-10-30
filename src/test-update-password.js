@@ -34,7 +34,9 @@ module.exports = async function (credentials) {
   check("returns a 200 or 403 with good credentials", response.status === 403 || response.status === 200);
   if (response.status === 403) {
     const body = await attempt("returns a JSON body if request status is 403", response.json());
-    check("returns a 'message' if status is 403", !!body.message);
+    if (body) {
+      check("returns a 'message' if status is 403", !!body.message);
+    }
   }
   if (response.status === 200) {
     response = await post("/update-password", {
