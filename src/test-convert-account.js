@@ -181,13 +181,17 @@ module.exports = async function () {
   const body2 = await attempt("returns a JSON body when connnectionToken is valid", response.json());
   if (body2) {
     await checkConversionResult(body2, config);
+    response = await post("/convert-account", {
+      body: JSON.stringify({
+        connectionToken: validUserWithToken.connectionToken,
+        newPassword: "newPasswordForConversion",
+      }),
+    });
+    check("connectionToken cannot be used twice to convert an account", response.status === 401);
   }
 
   if (body1) {
     return { userId: body1.userId, password: validUserWithLogin.currentPassword };
-  }
-  if (body2) {
-    return { userId: body2.userId, password: "newPasswordForConversion" };
   }
   return null;
 };
