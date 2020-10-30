@@ -12,7 +12,7 @@ const {
   attempt,
 } = require("./helpers");
 
-const checkConversionResult = async (body) => {
+const checkConversionResult = async (body, config) => {
   check("returns a 'userId'", !!body.userId);
   if (body.userData) {
     check("if body contains a 'userData', it must be an array", Array.isArray(body.userData));
@@ -32,6 +32,14 @@ const checkConversionResult = async (body) => {
       );
       for (let i = 0; i < body.userData.length; i++) {
         const userData = body.userData[i];
+        if (config && config.fields && Array.isArray(config.fields)) {
+          check(
+            "in userData, data '" +
+              userData.key +
+              "' has a 'type' and a 'key' that matches one of the 'fields' return by /config",
+            config.fields.find((ff) => ff.key === userData.key && ff.type === userData.type)
+          );
+        }
         switch (userData.type) {
           case "firstname":
           case "lastname":
@@ -138,6 +146,10 @@ module.exports = async function () {
   });
   check("returns a 401 when currentPassword does not match a valid currentLogin", response.status === 401);
 
+  // get config for later check
+  const configResponse = await get("/config");
+  const config = await configResponse.json();
+
   response = await post("/convert-account", {
     body: JSON.stringify({
       currentLogin: validUserWithLogin.currentLogin,
@@ -148,7 +160,7 @@ module.exports = async function () {
   check("returns a 200 when currentPassword matches currentLogin", response.status === 200);
   const body1 = await attempt("returns a JSON body when currentPassword matches currentLogin", response.json());
   if (body1) {
-    await checkConversionResult(body1);
+    await checkConversionResult(body1, config);
     // revert password change
     await post("/update-password", {
       body: JSON.stringify({
@@ -168,10 +180,9 @@ module.exports = async function () {
   check("returns a 200 when connectiontoken is valid", response.status === 200);
   const body2 = await attempt("returns a JSON body when connnectionToken is valid", response.json());
   if (body2) {
-    await checkConversionResult(body2);
+    await checkConversionResult(body2, config);
   }
 
-  // TODO check against config fields ?
   if (body1) {
     return { userId: body1.userId, password: validUserWithLogin.currentPassword };
   }
