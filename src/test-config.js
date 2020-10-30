@@ -1,3 +1,4 @@
+const moment = require("moment");
 const {
   head,
   get,
@@ -63,11 +64,11 @@ const testConfigResponse = async (response) => {
         const legalTerm = body.legalTerms[i];
         const linkResponse = await head(legalTerm.link);
         check(legalTerm.translatedText + " - Legal term's link returns a 200 on a GET", linkResponse.status === 200);
+        check(
+          legalTerm.translatedText + " - Legal term's date must be a valid date with format YYYY-MM-MM",
+          moment(legalTerm.date, "YYYY-MM-DD").isValid()
+        );
       }
-      /**
-       * TODO
-       * - test legalTermsdate is a valid date
-       */
     }
   }
 };

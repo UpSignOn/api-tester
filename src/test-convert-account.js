@@ -172,7 +172,6 @@ module.exports = async function () {
   }
 
   // TODO check against config fields ?
-  // TODO check that the partner stores the data with a route that gets all the data
   if (body1) {
     return { userId: body1.userId, password: validUserWithLogin.currentPassword };
   }
