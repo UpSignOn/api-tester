@@ -6,8 +6,8 @@ const buttonIds = ["SHOP"];
 
 // For conversion
 const validUserWithLogin = {
-  currentLogin: "test@test.com",
-  currentPassword: "testPass",
+  currentLogin: "conversion@test.com", // DO NOT use test@test.com
+  currentPassword: "testConversionPass",
 };
 const validUserWithToken = {
   connectionToken: "token",

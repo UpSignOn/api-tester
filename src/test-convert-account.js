@@ -16,63 +16,67 @@ const checkConversionResult = async (body) => {
   check("returns a 'userId'", !!body.userId);
   if (body.userData) {
     check("if body contains a 'userData', it must be an array", Array.isArray(body.userData));
-    check(
-      "each userData has at most a 'key', a'type' and a 'value'",
-      !body.userData.some((d) => Object.keys(d).some((k) => !["key", "type", "value"].includes(k)))
-    );
-    check(
-      "each userData has necessarily a 'key', a 'type' and a 'value'",
-      !body.userData.some((d) => !d.key || !d.type || !d.value)
-    );
-    check("each userData 'type' is standard", !body.userData.find((f) => !fieldTypes.includes(f.type)));
-    check(
-      "each userData has a unique 'key'",
-      !body.userData.some((f) => body.userData.filter((g) => g.key === f.key).length !== 1)
-    );
-    for (let i = 0; i < body.userData.length; i++) {
-      const userData = body.userData;
-      switch (userData.type) {
-        case "firstname":
-        case "lastname":
-          check(userData.key + " has a string value", typeof userData.value === "string");
-          break;
-        case "title":
-          check(userData.key + " has a 'M' or 'F' value", userData.value === "M" || userData.value === "F");
-          break;
-        case "dateOfBirth":
-          check(
-            userData.key + " has a valid date value in format YYYY-MM-DD",
-            moment(userData.value, "YYYY-MM-DD").isValid()
-          );
-          break;
-        case "email":
-          check(userData.key + " has an object value containing 'address'", !!userData.value.address);
-          break;
-        case "phoneNumber":
-          check(userData.key + " has an object value containing 'number'", !!userData.value.number);
-          check(userData.key + " 'number' starts with '+'", userData.value.number.startsWith("+"));
-          break;
-        case "postalAddress":
-          check(userData.key + " has an array value", Array.isArray(userData.value));
-          check(
-            "in " +
-              userData.key +
-              " all addresses contain at least 'streetAddress', 'city', 'postalCode' and 'country'",
-            !userData.value.some((a) => !a.streetAddress || !a.city || !a.postalCode || !a.country)
-          );
-          break;
-        case "iban":
-          check(userData.key + " has an object value containing at least 'IBAN'", !!userData.value.IBAN);
-          break;
-        case "newsletterConsent":
-          check(
-            userData.key + " has an object value containing 'email', 'postal_mail', 'phone', 'sms'",
-            typeof userData.value.email === "boolean" &&
-              typeof userData.value.postal_mail === "boolean" &&
-              typeof userData.value.phone === "boolean" &&
-              typeof userData.value.sms === "boolean"
-          );
-          break;
+    if (Array.isArray(body.userData)) {
+      check(
+        "each userData has at most a 'key', a'type' and a 'value'",
+        !body.userData.some((d) => Object.keys(d).some((k) => !["key", "type", "value"].includes(k)))
+      );
+      check(
+        "each userData has necessarily a 'key', a 'type' and a 'value'",
+        !body.userData.some((d) => !d.key || !d.type || !d.value)
+      );
+      check("each userData 'type' is standard", !body.userData.find((f) => !fieldTypes.includes(f.type)));
+      check(
+        "each userData has a unique 'key'",
+        !body.userData.some((f) => body.userData.filter((g) => g.key === f.key).length !== 1)
+      );
+      for (let i = 0; i < body.userData.length; i++) {
+        const userData = body.userData[i];
+        switch (userData.type) {
+          case "firstname":
+          case "lastname":
+            check(userData.key + " has a string value", typeof userData.value === "string");
+            break;
+          case "title":
+            check(userData.key + " has a 'M' or 'F' value", userData.value === "M" || userData.value === "F");
+            break;
+          case "dateOfBirth":
+            check(
+              userData.key + " has a valid date value in format YYYY-MM-DD",
+              moment(userData.value, "YYYY-MM-DD").isValid()
+            );
+            break;
+          case "email":
+            check(userData.key + " has an object value containing 'address'", !!userData.value.address);
+            break;
+          case "phoneNumber":
+            check(userData.key + " has an object value containing 'number'", !!userData.value.number);
+            check(userData.key + " 'number' starts with '+'", userData.value.number.startsWith("+"));
+            break;
+          case "postalAddress":
+            check(userData.key + " has an array value", Array.isArray(userData.value));
+            check(
+              "in " +
+                userData.key +
+                " all addresses contain at least 'streetAddress', 'city', 'postalCode' and 'country'",
+              !userData.value.some((a) => !a.streetAddress || !a.city || !a.postalCode || !a.country)
+            );
+            break;
+          case "iban":
+            check(userData.key + " has an object value containing at least 'IBAN'", !!userData.value.IBAN);
+            break;
+          case "newsletterConsent":
+            check(
+              userData.key + " has an object value containing 'email', 'postal_mail', 'phone', 'sms'",
+              typeof userData.value.email === "boolean" &&
+                typeof userData.value.postal_mail === "boolean" &&
+                typeof userData.value.phone === "boolean" &&
+                typeof userData.value.sms === "boolean"
+            );
+            break;
+          default:
+            check("THIS IS A BUG IN THE TESTER", false);
+        }
       }
     }
   }
@@ -145,6 +149,13 @@ module.exports = async function () {
   let body = await attempt("returns a JSON body when currentPassword matches currentLogin", response.json());
   if (body) {
     await checkConversionResult(body);
+    await post("/update-password", {
+      body: JSON.stringify({
+        userId: body.userId,
+        password: "newPasswordForConversion",
+        newPassword: validUserWithLogin.currentPassword,
+      }),
+    });
   }
 
   response = await post("/convert-account", {
@@ -157,6 +168,13 @@ module.exports = async function () {
   body = await attempt("returns a JSON body when connnectionToken is valid", response.json());
   if (body) {
     await checkConversionResult(body);
+    await post("/update-password", {
+      body: JSON.stringify({
+        userId: body.userId,
+        password: "newPasswordForConversion",
+        newPassword: validUserWithLogin.currentPassword,
+      }),
+    });
   }
 
   // TODO check that the partner stores the data with a route that gets all the data
