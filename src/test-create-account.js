@@ -1,14 +1,4 @@
-const {
-  get,
-  post,
-  displayBold,
-  displayError,
-  displayErrorTitle,
-  displaySuccessTitle,
-  fieldTypes,
-  check,
-  attempt,
-} = require("./helpers");
+const { post, displayBold, check, attempt } = require("./helpers");
 
 module.exports = async function () {
   displayBold("Testing /create-account");

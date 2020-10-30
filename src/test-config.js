@@ -1,15 +1,5 @@
 const moment = require("moment");
-const {
-  head,
-  get,
-  displayBold,
-  displayError,
-  displayErrorTitle,
-  displaySuccessTitle,
-  fieldTypes,
-  check,
-  attempt,
-} = require("./helpers");
+const { head, get, displayBold, fieldTypes, check, attempt } = require("./helpers");
 
 const testConfigResponse = async (response) => {
   check("returns a 200", response.status === 200);

@@ -1,16 +1,6 @@
 const moment = require("moment");
 const { validUserWithLogin, validUserWithToken } = require("../context");
-const {
-  get,
-  post,
-  displayBold,
-  displayError,
-  displayErrorTitle,
-  displaySuccessTitle,
-  fieldTypes,
-  check,
-  attempt,
-} = require("./helpers");
+const { get, post, displayBold, check, attempt } = require("./helpers");
 
 const checkConversionResult = async (body, config) => {
   check("returns a 'userId'", !!body.userId);

@@ -1,13 +1,4 @@
-const {
-  post,
-  displayBold,
-  displayError,
-  displayErrorTitle,
-  displaySuccessTitle,
-  fieldTypes,
-  check,
-  attempt,
-} = require("./helpers");
+const { post, displayBold, check, attempt } = require("./helpers");
 
 module.exports = async function (credentials) {
   displayBold("Testing /delete-account-and-data");

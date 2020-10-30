@@ -1,14 +1,5 @@
 const { buttonIds } = require("../context");
-const {
-  get,
-  displayBold,
-  displayError,
-  displayErrorTitle,
-  displaySuccessTitle,
-  fieldTypes,
-  check,
-  attempt,
-} = require("./helpers");
+const { get, displayBold, check, attempt } = require("./helpers");
 
 const testButtonConfigResponse = async (response, config) => {
   check("returns a 200", response.status === 200);

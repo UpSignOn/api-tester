@@ -19,6 +19,10 @@ const check = (testName, condition) => {
   if (!condition) displayErrorTitle(1, testName);
   else displaySuccessTitle(1, testName);
 };
+const checkSecurity = (testName, condition) => {
+  if (!condition) displayErrorTitle(1, testName);
+  else displaySuccessTitle(1, testName);
+};
 const attempt = async (testName, promise) => {
   try {
     const res = await promise;
@@ -64,11 +68,11 @@ const displayError = (increment, message) => {
   console.log("   ".repeat(increment), "\x1b[31m", message, "\x1b[0m");
   ALL_TESTS_PASS = false;
 };
-const displayErrorTitle = (increment, message) => {
+const displayErrorTitle = (increment, message, withSecurity) => {
   console.log("   ".repeat(increment), "\x1b[41m", message, "\x1b[0m");
   ALL_TESTS_PASS = false;
 };
-const displaySuccessTitle = (increment, message) => {
+const displaySuccessTitle = (increment, message, withSecurity) => {
   console.log("   ".repeat(increment), "\x1b[42m", message, "\x1b[0m");
 };
 const displaySuccess = (message) => {
@@ -93,9 +97,5 @@ module.exports = {
   get,
   post,
   displayBold,
-  displayError,
-  displayErrorTitle,
-  displaySuccessTitle,
-  displaySuccess,
   showFinalMessageAndExit,
 };

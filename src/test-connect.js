@@ -1,15 +1,4 @@
-const {
-  head,
-  get,
-  post,
-  displayBold,
-  displayError,
-  displayErrorTitle,
-  displaySuccessTitle,
-  fieldTypes,
-  check,
-  attempt,
-} = require("./helpers");
+const { head, post, displayBold, check, attempt } = require("./helpers");
 
 const testConnectErrorCases = async () => {
   displayBold("Testing /connect error cases");
