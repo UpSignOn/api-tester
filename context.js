@@ -4,7 +4,18 @@ const badUrl = "https://monptitshop.upsignon.eu/deo";
 
 const buttonIds = ["SHOP"];
 
+// For conversion
+const validUserWithLogin = {
+  currentLogin: "test@test.com",
+  currentPassword: "testPass",
+};
+const validUserWithToken = {
+  connectionToken: "token",
+};
+
 module.exports = {
   url: devUrl,
   buttonIds,
+  validUserWithLogin,
+  validUserWithToken,
 };

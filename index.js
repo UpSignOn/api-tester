@@ -7,6 +7,7 @@ const testUpdateData = require("./src/test-update-data");
 const testUpdatePassword = require("./src/test-update-password");
 const testDeleteAccountAndData = require("./src/test-delete-account-and-data");
 const testGetAccountDeletionStatus = require("./src/test-get-account-deletion-status");
+const testConvertAccount = require("./src/test-convert-account");
 
 const runTests = async () => {
   try {
@@ -23,6 +24,7 @@ const runTests = async () => {
         await testGetAccountDeletionStatus(newCredentials);
       }
     }
+    const convertedAcountCredentials = await testConvertAccount();
   } catch (e) {
     console.log(e);
     displayError(
