@@ -149,6 +149,7 @@ module.exports = async function () {
   const body1 = await attempt("returns a JSON body when currentPassword matches currentLogin", response.json());
   if (body1) {
     await checkConversionResult(body1);
+    // revert password change
     await post("/update-password", {
       body: JSON.stringify({
         userId: body1.userId,
@@ -178,4 +179,5 @@ module.exports = async function () {
   if (body2) {
     return { userId: body2.userId, password: "newPasswordForConversion" };
   }
+  return null;
 };

@@ -25,14 +25,8 @@ const runTests = async () => {
       }
     }
     const convertedAcountCredentials = await testConvertAccount();
-    if (credentials && credentials.userId) {
-      await testConnect(credentials);
-      await testUpdateData(credentials);
-      const newCredentials = await testUpdatePassword(credentials);
-      const deletionStatus = await testDeleteAccountAndData(newCredentials);
-      if (deletionStatus === "PENDING") {
-        await testGetAccountDeletionStatus(newCredentials);
-      }
+    if (convertedAcountCredentials && convertedAcountCredentials.userId) {
+      await testConnect(convertedAcountCredentials);
     }
   } catch (e) {
     console.log(e);
