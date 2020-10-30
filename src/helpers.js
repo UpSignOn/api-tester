@@ -20,8 +20,8 @@ const check = (testName, condition) => {
   else displaySuccessTitle(1, testName);
 };
 const checkSecurity = (testName, condition) => {
-  if (!condition) displayErrorTitle(1, testName);
-  else displaySuccessTitle(1, testName);
+  if (!condition) displayErrorTitle(1, testName, true);
+  else displaySuccessTitle(1, testName, true);
 };
 const attempt = async (testName, promise) => {
   try {
@@ -69,11 +69,11 @@ const displayError = (increment, message) => {
   ALL_TESTS_PASS = false;
 };
 const displayErrorTitle = (increment, message, withSecurity) => {
-  console.log("   ".repeat(increment), "\x1b[41m", message, "\x1b[0m");
+  console.log(`${"   ".repeat(increment)}${withSecurity ? "\x1b[46mSecurity! ------" : ""}\x1b[41m${message}\x1b[0m`);
   ALL_TESTS_PASS = false;
 };
 const displaySuccessTitle = (increment, message, withSecurity) => {
-  console.log("   ".repeat(increment), "\x1b[42m", message, "\x1b[0m");
+  console.log(`${"   ".repeat(increment)}${withSecurity ? "\x1b[46mSecurity! ------" : ""}\x1b[42m${message}\x1b[0m`);
 };
 const displaySuccess = (message) => {
   console.log("\x1b[32m", message, "\x1b[0m");
@@ -92,6 +92,7 @@ const showFinalMessageAndExit = () => {
 module.exports = {
   fieldTypes,
   check,
+  checkSecurity,
   attempt,
   head,
   get,

@@ -1,4 +1,4 @@
-const { post, displayBold, check, attempt } = require("./helpers");
+const { post, displayBold, check, checkSecurity, attempt } = require("./helpers");
 
 module.exports = async function (credentials) {
   displayBold("Testing /update-data");
@@ -12,7 +12,7 @@ module.exports = async function (credentials) {
   check("returns a 400 or 401  with missing userId", response.status === 400 || response.status === 401);
 
   response = await post("/update-data", { body: JSON.stringify({ userId: credentials.userId }) });
-  check("returns a 400 or 401  with missing password", response.status === 400 || response.status === 401);
+  checkSecurity("returns a 400 or 401  with missing password", response.status === 400 || response.status === 401);
 
   response = await post("/update-data", { body: JSON.stringify(credentials) });
   check("returns a 400 or 401  with missing data", response.status === 400 || response.status === 401);
@@ -23,12 +23,12 @@ module.exports = async function (credentials) {
   response = await post("/update-data", {
     body: JSON.stringify({ userId: "badId", password: "badPassword", data: [] }),
   });
-  check("returns a 401 with bad credentials", response.status === 401);
+  checkSecurity("returns a 401 with bad credentials", response.status === 401);
 
   response = await post("/update-data", {
     body: JSON.stringify({ userId: credentials.userId, password: "badPassword", data: [] }),
   });
-  check("returns a 401 with bad password", response.status === 401);
+  checkSecurity("returns a 401 with bad password", response.status === 401);
 
   response = await post("/update-data", {
     body: JSON.stringify({ ...credentials, data: [] }),

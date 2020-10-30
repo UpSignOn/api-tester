@@ -1,6 +1,6 @@
 const moment = require("moment");
 const { validUserWithLogin, validUserWithToken } = require("../context");
-const { get, post, displayBold, check, attempt } = require("./helpers");
+const { get, post, displayBold, check, checkSecurity, attempt, fieldTypes } = require("./helpers");
 
 const checkConversionResult = async (body, config) => {
   check("returns a 'userId'", !!body.userId);
@@ -96,7 +96,10 @@ module.exports = async function () {
   response = await post("/convert-account", {
     body: JSON.stringify({ currentLogin: "login", newPassword: "newPassword" }),
   });
-  check("returns a 400 with an missing currentPassword", response.status === 400);
+  checkSecurity(
+    "returns a 400 or 401 with an missing currentPassword",
+    response.status === 400 || response.status === 401
+  );
 
   response = await post("/convert-account", {
     body: JSON.stringify({ connectionToken: "token" }),
@@ -125,7 +128,7 @@ module.exports = async function () {
       newPassword: "newPassword",
     }),
   });
-  check("returns a 401 when login does not match a valid user", response.status === 401);
+  checkSecurity("returns a 401 when login does not match a valid user", response.status === 401);
 
   response = await post("/convert-account", {
     body: JSON.stringify({
@@ -134,7 +137,7 @@ module.exports = async function () {
       newPassword: "newPassword",
     }),
   });
-  check("returns a 401 when currentPassword does not match a valid currentLogin", response.status === 401);
+  checkSecurity("returns a 401 when currentPassword does not match a valid currentLogin", response.status === 401);
 
   // get config for later check
   const configResponse = await get("/config");
@@ -167,7 +170,7 @@ module.exports = async function () {
       newPassword: "newPasswordForConversion",
     }),
   });
-  check("returns a 200 when connectiontoken is valid", response.status === 200);
+  check("returns a 200 when connectionToken is valid", response.status === 200);
   const body2 = await attempt("returns a JSON body when connnectionToken is valid", response.json());
   if (body2) {
     await checkConversionResult(body2, config);
@@ -177,7 +180,7 @@ module.exports = async function () {
         newPassword: "newPasswordForConversion",
       }),
     });
-    check("connectionToken cannot be used twice to convert an account", response.status === 401);
+    checkSecurity("connectionToken cannot be used twice to convert an account", response.status === 401);
   }
 
   if (body1) {
