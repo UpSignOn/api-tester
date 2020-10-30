@@ -6,6 +6,7 @@ const { testConnectErrorCases, testConnect } = require("./src/test-connect");
 const testUpdateData = require("./src/test-update-data");
 const testUpdatePassword = require("./src/test-update-password");
 const testDeleteAccountAndData = require("./src/test-delete-account-and-data");
+const testGetAccountDeletionStatus = require("./src/test-get-account-deletion-status");
 
 const runTests = async () => {
   try {
@@ -19,6 +20,7 @@ const runTests = async () => {
       const newCredentials = await testUpdatePassword(credentials);
       const deletionStatus = await testDeleteAccountAndData(newCredentials);
       if (deletionStatus === "PENDING") {
+        await testGetAccountDeletionStatus(newCredentials);
       }
     }
   } catch (e) {
