@@ -31,6 +31,12 @@ const testConnectErrorCases = async () => {
 
 const testConnect = async (credentials) => {
   displayBold("Testing /connect for user " + credentials.userId);
+
+  let response = await post("/connect", {
+    body: JSON.stringify({ userId: credentials.userId, password: "badPassword" }),
+  });
+  check("should return a 401 for a bad password but a correct userId", response.status === 401);
+
   response = await post("/connect", { body: JSON.stringify(credentials) });
   check("should connect user and return a 200", response.status === 200);
   const body = await attempt("shoudl return a JSON body", response.json());
