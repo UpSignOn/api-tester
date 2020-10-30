@@ -10,7 +10,7 @@ const validUserWithLogin = {
   currentPassword: "testConversionPass",
 };
 const validUserWithToken = {
-  connectionToken: "token",
+  connectionToken: "cc38b4a5-074e-420c-b560-32e4d7eabb77:cc38b4a5-074e-420c-b560-32e4d7eabb78",
 };
 
 module.exports = {
