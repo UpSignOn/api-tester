@@ -13,10 +13,10 @@ const {
 module.exports = async function () {
   displayBold("Testing /create-account");
   let response = await post("/create-account", null);
-  check("returns a 400", response.status === 400);
+  check("returns a 400 with a null body", response.status === 400);
 
   response = await post("/create-account", { body: JSON.stringify({}) });
-  check("returns a 400", response.status === 400);
+  check("returns a 400 with an empty body", response.status === 400);
 
   response = await post("/create-account", { body: JSON.stringify({ password: "password" }) });
   check("returns a 200 or a 403", response.status === 403 || response.status === 200);

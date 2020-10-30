@@ -4,6 +4,7 @@ const testButtonConfig = require("./src/test-button-config");
 const testCreateAccount = require("./src/test-create-account");
 const { testConnectErrorCases, testConnect } = require("./src/test-connect");
 const testUpdateData = require("./src/test-update-data");
+const testUpdatePassword = require("./src/test-update-password");
 
 testConfig()
   .then(testButtonConfig)
@@ -13,6 +14,7 @@ testConfig()
     if (credentials.userId) {
       await testConnect(credentials);
       await testUpdateData(credentials);
+      const newCredentials = await testUpdatePassword(credentials);
     }
   })
   .catch((e) => {

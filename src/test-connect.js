@@ -14,19 +14,19 @@ const {
 const testConnectErrorCases = async () => {
   displayBold("Testing /connect error cases");
   let response = await post("/connect", null);
-  check("returns a 401", response.status === 401);
+  check("returns a 400 or 401 with a null body", response.status === 401 || response.status === 400);
 
   response = await post("/connect", { body: JSON.stringify({}) });
-  check("returns a 401", response.status === 401);
+  check("returns a 400 or 401 with an empty body", response.status === 401 || response.status === 400);
 
   response = await post("/connect", { body: JSON.stringify({ password: "password" }) });
-  check("returns a 401", response.status === 401);
+  check("returns a 400 or 401 when userId is missing", response.status === 401 || response.status === 400);
 
   response = await post("/connect", { body: JSON.stringify({ userId: "badId" }) });
-  check("returns a 401", response.status === 401);
+  check("returns a 400 or 401 when password is missing", response.status === 401 || response.status === 400);
 
   response = await post("/connect", { body: JSON.stringify({ userId: "badId", password: "badPassword" }) });
-  check("returns a 401", response.status === 401);
+  check("returns a 401 whith bad credentials", response.status === 401);
 };
 
 const testConnect = async (credentials) => {

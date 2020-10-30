@@ -10,7 +10,7 @@ This tests are not complete. Some things cannot be tested with this module.
 
 # Known issue
 
-Your implementation may be OK while the test fail. For instance, in /update-data, testing
+For error cases, your implementation may be OK while the test fail. For instance, in /update-data, testing
 
 - userId not empty (otherwise 400)
 - then password not empty (otherwise 401)
