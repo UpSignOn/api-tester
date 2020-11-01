@@ -22,6 +22,12 @@ const testConfigResponse = async (response) => {
       )
     );
     check(
+      "each field has a unique 'variant' if it has one that is not 'custom'",
+      !body.fields.some(
+        (f) => !!f.variant && f.variant !== "custom" && body.fields.filter((g) => g.variant === f.variant).length !== 1
+      )
+    );
+    check(
       "no field has non-standard object keys",
       !body.fields.some((f) =>
         Object.keys(f).some((k) => !["type", "key", "mandatory", "variant", "customLabel"].includes(k))
