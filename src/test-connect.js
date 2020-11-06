@@ -52,10 +52,13 @@ const testConnect = async (credentials) => {
       /^[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}$/.test(body.connectionToken)
     );
     check("response should contain a 'redirectionUri' - received " + body.redirectionUri, !!body.redirectionUri);
-    check("redirectionUri should not contain anchors", body.redirectionUri.indexOf("#") === -1);
+    check(
+      "redirectionUri should not contain anchors",
+      !!body.redirectionUri && body.redirectionUri.indexOf("#") === -1
+    );
     checkSecurity(
       "redirectionUri should not contain an unchecked buttonId (Open Redirect breach)",
-      body.redirectionUri.indexOf(buttonId) === -1
+      !!body.redirectionUri && body.redirectionUri.indexOf(buttonId) === -1
     );
     let uriResponse = await head(body.redirectionUri);
     check(
@@ -70,7 +73,7 @@ const testConnect = async (credentials) => {
       uriResponse.status !== 200
     );
     uriResponse = await head(
-      `${body.redirectionUri}${body.redirectionUri.indexOf("?") !== -1 ? "&" : "?"}userId=${
+      `${body.redirectionUri}${!!body.redirectionUri && body.redirectionUri.indexOf("?") !== -1 ? "&" : "?"}userId=${
         credentials.userId
       }&connectiontoken=${body.connectionToken}`
     );
@@ -79,7 +82,7 @@ const testConnect = async (credentials) => {
       uriResponse.status === 200
     );
     uriResponse = await head(
-      `${body.redirectionUri}${body.redirectionUri.indexOf("?") !== -1 ? "&" : "?"}userId=${
+      `${body.redirectionUri}${!!body.redirectionUri && body.redirectionUri.indexOf("?") !== -1 ? "&" : "?"}userId=${
         credentials.userId
       }&connectiontoken=${body.connectionToken}`
     );
