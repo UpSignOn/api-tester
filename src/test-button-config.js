@@ -2,7 +2,7 @@ const { buttonIds } = require("../context");
 const { get, displayBold, check, attempt } = require("./helpers");
 
 const testButtonConfigResponse = async (response, config) => {
-  check("returns a 200", response.status === 200);
+  check("returns a 200 - received " + response.status, response.status === 200);
   const body = await attempt("returns a JSON body", response.json());
   if (body) {
     check("result contains 'generalConfigVersion'", !!body.generalConfigVersion);
@@ -49,5 +49,5 @@ module.exports = async function () {
   }
 
   const response = await get("/button-config?buttonId=unknown");
-  check("returns 404 for unknown buttonId", response.status === 404);
+  check("returns 404 for unknown buttonId received " + response.status, response.status === 404);
 };

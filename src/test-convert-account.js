@@ -3,7 +3,7 @@ const { validUserWithLogin, validUserWithToken } = require("../context");
 const { get, post, displayBold, check, checkSecurity, attempt, fieldTypes } = require("./helpers");
 
 const checkConversionResult = async (body, config) => {
-  check("returns a 'userId'", !!body.userId);
+  check("returns a 'userId' - received " + body.userId, !!body.userId);
   if (body.userData) {
     check("if body contains a 'userData', it must be an array", Array.isArray(body.userData));
     if (Array.isArray(body.userData)) {
@@ -83,33 +83,39 @@ const checkConversionResult = async (body, config) => {
 module.exports = async function () {
   displayBold("Testing /convert-account");
   let response = await post("/convert-account", null);
-  check("returns a 400 with a null body", response.status === 400);
+  check("returns a 400 with a null body - received " + response.status, response.status === 400);
 
   response = await post("/convert-account", { body: JSON.stringify({}) });
-  check("returns a 400 with an empty body", response.status === 400);
+  check("returns a 400 with an empty body - received " + response.status, response.status === 400);
 
   response = await post("/convert-account", {
     body: JSON.stringify({ currentPassword: "password", newPassword: "newPassword" }),
   });
-  check("returns a 400 with an missing currentLogin", response.status === 400);
+  check("returns a 400 with an missing currentLogin - received " + response.status, response.status === 400);
 
   response = await post("/convert-account", {
     body: JSON.stringify({ currentLogin: "login", newPassword: "newPassword" }),
   });
   checkSecurity(
-    "returns a 400 or 401 with an missing currentPassword",
+    "returns a 400 or 401 with an missing currentPassword - received " + response.status,
     response.status === 400 || response.status === 401
   );
 
   response = await post("/convert-account", {
     body: JSON.stringify({ connectionToken: "token" }),
   });
-  check("returns a 400 with connectionToken but missing newPassword", response.status === 400);
+  check(
+    "returns a 400 with connectionToken but missing newPassword - received " + response.status,
+    response.status === 400
+  );
 
   response = await post("/convert-account", {
     body: JSON.stringify({ currentLogin: "login", currentPassword: "password" }),
   });
-  check("returns a 400 with currentLogin & currentPassword but missing newPassword", response.status === 400);
+  check(
+    "returns a 400 with currentLogin & currentPassword but missing newPassword - received " + response.status,
+    response.status === 400
+  );
 
   response = await post("/convert-account", {
     body: JSON.stringify({
@@ -119,7 +125,10 @@ module.exports = async function () {
       newPassword: "newPassword",
     }),
   });
-  check("returns a 400 with currentLogin & currentPassword & connectionToken & newPassword", response.status === 400);
+  check(
+    "returns a 400 with currentLogin & currentPassword & connectionToken & newPassword - received " + response.status,
+    response.status === 400
+  );
 
   response = await post("/convert-account", {
     body: JSON.stringify({
@@ -128,7 +137,10 @@ module.exports = async function () {
       newPassword: "newPassword",
     }),
   });
-  checkSecurity("returns a 401 when login does not match a valid user", response.status === 401);
+  checkSecurity(
+    "returns a 401 when login does not match a valid user - received " + response.status,
+    response.status === 401
+  );
 
   response = await post("/convert-account", {
     body: JSON.stringify({
@@ -137,7 +149,10 @@ module.exports = async function () {
       newPassword: "newPassword",
     }),
   });
-  checkSecurity("returns a 401 when currentPassword does not match a valid currentLogin", response.status === 401);
+  checkSecurity(
+    "returns a 401 when currentPassword does not match a valid currentLogin - received " + response.status,
+    response.status === 401
+  );
 
   // get config for later check
   const configResponse = await get("/config");
@@ -150,7 +165,10 @@ module.exports = async function () {
       newPassword: "newPasswordForConversion",
     }),
   });
-  check("returns a 200 when currentPassword matches currentLogin", response.status === 200);
+  check(
+    "returns a 200 when currentPassword matches currentLogin - received " + response.status,
+    response.status === 200
+  );
   const body1 = await attempt("returns a JSON body when currentPassword matches currentLogin", response.json());
   if (body1) {
     await checkConversionResult(body1, config);
@@ -170,7 +188,7 @@ module.exports = async function () {
       newPassword: "newPasswordForConversion",
     }),
   });
-  check("returns a 200 when connectionToken is valid", response.status === 200);
+  check("returns a 200 when connectionToken is valid - received " + response.status, response.status === 200);
   const body2 = await attempt("returns a JSON body when connnectionToken is valid", response.json());
   if (body2) {
     await checkConversionResult(body2, config);
@@ -180,7 +198,10 @@ module.exports = async function () {
         newPassword: "newPasswordForConversion",
       }),
     });
-    checkSecurity("connectionToken cannot be used twice to convert an account", response.status === 401);
+    checkSecurity(
+      "connectionToken cannot be used twice to convert an account - received " + response.status,
+      response.status === 401
+    );
   }
 
   if (body1) {

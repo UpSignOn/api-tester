@@ -69,11 +69,15 @@ const displayError = (increment, message) => {
   ALL_TESTS_PASS = false;
 };
 const displayErrorTitle = (increment, message, withSecurity) => {
-  console.log(`${"   ".repeat(increment)}${withSecurity ? "\x1b[46mSecurity! ------" : ""}\x1b[41m${message}\x1b[0m`);
+  console.log(
+    `${"   ".repeat(increment)}${withSecurity ? "\x1b[46mSecurity! ------" : ""}\x1b[41mKO - ${message}\x1b[0m`
+  );
   ALL_TESTS_PASS = false;
 };
 const displaySuccessTitle = (increment, message, withSecurity) => {
-  console.log(`${"   ".repeat(increment)}${withSecurity ? "\x1b[46mSecurity! ------" : ""}\x1b[42m${message}\x1b[0m`);
+  console.log(
+    `${"   ".repeat(increment)}${withSecurity ? "\x1b[46mSecurity! ------" : ""}\x1b[42mOK - ${message}\x1b[0m`
+  );
 };
 const displaySuccess = (message) => {
   console.log("\x1b[32m", message, "\x1b[0m");

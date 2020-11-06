@@ -2,7 +2,7 @@ const moment = require("moment");
 const { head, get, displayBold, fieldTypes, check, attempt } = require("./helpers");
 
 const testConfigResponse = async (response) => {
-  check("returns a 200", response.status === 200);
+  check("returns a 200 - received " + response.status, response.status === 200);
   const body = await attempt("returns a JSON body", response.json());
   if (body) {
     check("result contains 'version'", !!body.version);
@@ -59,7 +59,10 @@ const testConfigResponse = async (response) => {
       for (let i = 0; i < body.legalTerms.length; i++) {
         const legalTerm = body.legalTerms[i];
         const linkResponse = await head(legalTerm.link);
-        check(legalTerm.translatedText + " - Legal term's link returns a 200 on a GET", linkResponse.status === 200);
+        check(
+          legalTerm.translatedText + " - Legal term's link returns a 200 on a GET - received " + linkResponse.status,
+          linkResponse.status === 200
+        );
         check(
           legalTerm.translatedText + " - Legal term's date must be a valid date with format YYYY-MM-MM",
           moment(legalTerm.date, "YYYY-MM-DD").isValid()
