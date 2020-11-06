@@ -52,6 +52,7 @@ const testConnect = async (credentials) => {
       /^[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}$/.test(body.connectionToken)
     );
     check("response should contain a 'redirectionUri' - received " + body.redirectionUri, !!body.redirectionUri);
+    check("redirectionUri should not contain anchors", body.redirectionUri.indexOf("#") === -1);
     checkSecurity(
       "redirectionUri should not contain an unchecked buttonId (Open Redirect breach)",
       body.redirectionUri.indexOf(buttonId) === -1
