@@ -62,20 +62,26 @@ const testConnect = async (credentials) => {
       "'redirectionUri' should not return a 200 on GET without token - received " + uriResponse.status,
       uriResponse.status !== 200
     );
-    uriResponse = await head(body.redirectionUri + "?userId=" + credentials.userId + "&connectionToken=falseToken");
+    uriResponse = await head(
+      body.redirectionUri + "?userId=" + credentials.userId + "&connectionToken=" + body.connectionToken
+    );
     checkSecurity(
       "'redirectionUri' should not return a 200 on GET with a bad token - received " + uriResponse.status,
       uriResponse.status !== 200
     );
     uriResponse = await head(
-      body.redirectionUri + "?userId=" + credentials.userId + "&connectionToken=" + body.connectionToken
+      `${body.redirectionUri}${body.redirectionUri.indexOf("?") !== -1 ? "&" : "?"}userId=${
+        credentials.userId
+      }&connectiontoken=${body.connectionToken}`
     );
     check(
       "'redirectionUri' should return a 200 on GET with a good token - received " + uriResponse.status,
       uriResponse.status === 200
     );
     uriResponse = await head(
-      body.redirectionUri + "?userId=" + credentials.userId + "&connectionToken=" + body.connectionToken
+      `${body.redirectionUri}${body.redirectionUri.indexOf("?") !== -1 ? "&" : "?"}userId=${
+        credentials.userId
+      }&connectiontoken=${body.connectionToken}`
     );
     checkSecurity(
       "'redirectionUri' should not return a 200 on GET with a reused token - received " + uriResponse.status,
