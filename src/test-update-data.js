@@ -1,63 +1,53 @@
-const { post, displayBold, check, checkSecurity, attempt } = require("./helpers");
+const { TestGroup, RouteTest } = require("./report-builder");
 
 module.exports = async function (credentials) {
-  displayBold("Testing /update-data");
-  let response = await post("/update-data", null);
-  check(
-    "returns a 400 or 401 with null body - received " + response.status,
-    response.status === 400 || response.status === 401
-  );
+  const testGroup = new TestGroup("Route /update-data");
 
-  response = await post("/update-data", { body: JSON.stringify({}) });
-  check(
-    "returns a 400 or 401  with empty body - received " + response.status,
-    response.status === 400 || response.status === 401
-  );
+  let apiCall = testGroup.newApiCall("POST", "/update-data", "with null body", null);
+  await apiCall.checkStatus([400, 401]);
 
-  response = await post("/update-data", { body: JSON.stringify({ password: "password" }) });
-  check(
-    "returns a 400 or 401  with missing userId - received " + response.status,
-    response.status === 400 || response.status === 401
-  );
+  apiCall = testGroup.newApiCall("POST", "/update-data", "with empty body", {});
+  await apiCall.checkStatus([400, 401]);
 
-  response = await post("/update-data", { body: JSON.stringify({ userId: credentials.userId }) });
-  checkSecurity(
-    "returns a 400 or 401  with missing password - received " + response.status,
-    response.status === 400 || response.status === 401
-  );
+  apiCall = testGroup.newApiCall("POST", "/update-data", "with missing userId", { password: "password" });
+  await apiCall.checkStatus([400, 401]);
 
-  response = await post("/update-data", { body: JSON.stringify(credentials) });
-  check(
-    "returns a 400 or 401  with missing data - received " + response.status,
-    response.status === 400 || response.status === 401
-  );
+  apiCall = testGroup.newApiCall("POST", "/update-data", "with missing password", { userId: credentials.userId });
+  await apiCall.security().checkStatus([400, 401]);
 
-  response = await post("/update-data", { body: JSON.stringify({ data: [] }) });
-  check(
-    "returns a 400 or 401  with missing credentials - received " + response.status,
-    response.status === 400 || response.status === 401
-  );
+  apiCall = testGroup.newApiCall("POST", "/update-data", "with missing data", credentials);
+  await apiCall.security().checkStatus([400, 401]);
 
-  response = await post("/update-data", {
-    body: JSON.stringify({ userId: "badId", password: "badPassword", data: [] }),
+  apiCall = testGroup.newApiCall("POST", "/update-data", "with missing credentials", { data: [] });
+  await apiCall.checkStatus([400, 401]);
+
+  apiCall = testGroup.newApiCall("POST", "/update-data", "with bad credentials", {
+    userId: "badId",
+    password: "badPassword",
+    data: [],
   });
-  checkSecurity("returns a 401 with bad credentials - received " + response.status, response.status === 401);
+  await apiCall.security().checkStatus([401]);
 
-  response = await post("/update-data", {
-    body: JSON.stringify({ userId: credentials.userId, password: "badPassword", data: [] }),
+  apiCall = testGroup.newApiCall("POST", "/update-data", "with bad password", {
+    userId: credentials.userId,
+    password: "badPassword",
+    data: [],
   });
-  checkSecurity("returns a 401 with bad password - received " + response.status, response.status === 401);
+  await apiCall.security().checkStatus([401]);
 
-  response = await post("/update-data", {
-    body: JSON.stringify({ ...credentials, data: [] }),
+  apiCall = testGroup.newApiCall("POST", "/update-data", "with correct credentials", {
+    ...credentials,
+    data: [],
   });
-  check("returns a 200 or a 403 - received " + response.status, response.status === 403 || response.status === 200);
-  if (response.status === 403) {
-    const body = await attempt("returns a JSON body if request status is 403", response.json());
+  const status = await apiCall.security().checkStatus([200, 403]);
+
+  if (status === 403) {
+    const body = await apiCall.getJSON();
     if (body) {
-      check("returns a 'message' if status is 403 - received " + body.message, !!body.message);
+      apiCall.addBodyCheck("returns a 'message' if status is 403 - received " + body.message, !!body.message);
     }
   }
 
   // TODO check that the partner stores the data with a route that gets all the data
+  return testGroup;
 };

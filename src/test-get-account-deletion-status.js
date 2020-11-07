@@ -1,55 +1,51 @@
-const { post, displayBold, check, attempt } = require("./helpers");
+const { TestGroup, RouteTest } = require("./report-builder");
 
 module.exports = async function (credentials) {
-  displayBold("Testing /get-account-deletion-status");
-  let response = await post("/get-account-deletion-status", null);
-  check(
-    "returns a 400 or 401 with null body - received " + response.status,
-    response.status === 400 || response.status === 401
-  );
+  const testGroup = new TestGroup("Route /get-account-deletion-status");
 
-  response = await post("/get-account-deletion-status", { body: JSON.stringify({}) });
-  check(
-    "returns a 400 or 401 with empty body - received " + response.status,
-    response.status === 400 || response.status === 401
-  );
+  let apiCall = testGroup.newApiCall("POST", "/get-account-deletion-status", "when body is null", null);
+  await apiCall.checkStatus([400, 401]);
 
-  response = await post("/get-account-deletion-status", { body: JSON.stringify({ password: "password" }) });
-  check(
-    "returns a 400 or 401 with missing userId - received " + response.status,
-    response.status === 400 || response.status === 401
-  );
+  apiCall = testGroup.newApiCall("POST", "/get-account-deletion-status", "when body is empty", {});
+  await apiCall.checkStatus([400, 401]);
 
-  response = await post("/get-account-deletion-status", { body: JSON.stringify({ userId: credentials.userId }) });
-  check(
-    "returns a 400 or 401 with missing password - received " + response.status,
-    response.status === 400 || response.status === 401
-  );
-
-  response = await post("/get-account-deletion-status", {
-    body: JSON.stringify({ userId: credentials.userId, password: "BadPassword" }),
+  apiCall = testGroup.newApiCall("POST", "/get-account-deletion-status", "when userId is missing", {
+    password: "password",
   });
-  check("returns a 401 with bad password - received " + response.status, response.status === 401);
+  await apiCall.checkStatus([400, 401]);
 
-  response = await post("/get-account-deletion-status", {
-    body: JSON.stringify({ userId: "c309faba-e7d5-4ea3-bf4f-f888b069197e", password: "anyPassword" }),
+  apiCall = testGroup.newApiCall("POST", "/get-account-deletion-status", "when password is missing", {
+    userId: credentials.userId,
   });
-  check("returns a 200 when account does not exist - received " + response.status, response.status === 200);
-  let body = await attempt("returns a JSON body when account does not exist", response.json());
+  await apiCall.checkStatus([400, 401]);
+
+  apiCall = testGroup.newApiCall("POST", "/get-account-deletion-status", "when password is wrong", {
+    userId: credentials.userId,
+    password: "BadPassword",
+  });
+  await apiCall.checkStatus([401]);
+
+  apiCall = testGroup.newApiCall("POST", "/get-account-deletion-status", "when account no longer exists", {
+    userId: "c309faba-e7d5-4ea3-bf4f-f888b069197e",
+    password: "anyPassword",
+  });
+  await apiCall.checkStatus([200]);
+  let body = await apiCall.getJSON();
   if (body) {
-    check("returns 'deletionStatus: DONE' when account does not exist", body.deletionStatus === "DONE");
+    apiCall.addBodyCheck(
+      "returns 'deletionStatus: DONE' when account does not exist - received " + body.deletionStatus,
+      body.deletionStatus === "DONE"
+    );
   }
 
-  response = await post("/get-account-deletion-status", {
-    body: JSON.stringify(credentials),
-  });
-  check("returns a 200 whith correct credentials - received " + response.status, response.status === 200);
-  body = await attempt("returns a JSON body whith correct credentials", response.json());
+  apiCall = testGroup.newApiCall("POST", "/get-account-deletion-status", "with correct credentials", credentials);
+  await apiCall.checkStatus([200]);
+  body = await apiCall.getJSON();
   if (body) {
-    check(
-      "returns 'deletionStatus: CANCELED' or 'deletionStatus: PENDING' whith correct credentials - received " +
-        body.deletionStatus,
+    apiCall.addBodyCheck(
+      "returns 'deletionStatus: CANCELED' or 'deletionStatus: PENDING' - received " + body.deletionStatus,
       body.deletionStatus === "CANCELED" || body.deletionStatus === "PENDING"
     );
   }
+  return testGroup;
 };

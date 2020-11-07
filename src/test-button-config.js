@@ -1,53 +1,63 @@
 const { buttonIds } = require("../context");
 const { get, displayBold, check, attempt } = require("./helpers");
+const { TestGroup, RouteTest } = require("./report-builder");
 
-const testButtonConfigResponse = async (response, config) => {
-  check("returns a 200 - received " + response.status, response.status === 200);
-  const body = await attempt("returns a JSON body", response.json());
+const testButtonConfigResponse = async (testGroup, queryParameters, config) => {
+  const apiCall = testGroup.newApiCall(
+    "GET",
+    "/button-config",
+    "for button " + queryParameters.buttonId,
+    queryParameters
+  );
+  await apiCall.checkStatus([200]);
+  const body = await apiCall.getJSON();
   if (body) {
-    check("result contains 'generalConfigVersion'", !!body.generalConfigVersion);
-    check("'generalConfigVersion' is of type string", typeof body.generalConfigVersion === "string");
-    check(
+    apiCall.addBodyCheck("result contains 'generalConfigVersion'", !!body.generalConfigVersion);
+    apiCall.addBodyCheck("'generalConfigVersion' is of type string", typeof body.generalConfigVersion === "string");
+    apiCall.addBodyCheck(
       "'generalConfigVersion' matches the 'version' of the /config route",
       config.version === body.generalConfigVersion
     );
-    check("result contains 'fields'", !!body.fields);
-    check("'fields' is of type array", Array.isArray(body.fields));
-    check(
+    apiCall.addBodyCheck("result contains 'fields'", !!body.fields);
+    apiCall.addBodyCheck("'fields' is of type array", Array.isArray(body.fields));
+    apiCall.addBodyCheck(
       "'fields' is a subset of the 'fields' array returned by /config",
       !body.fields.some((f) => !config.fields.find((ff) => ff.key === f.key && ff.type === f.type))
     );
-    check(
+    apiCall.addBodyCheck(
       "no field has non-standard object keys",
       !body.fields.some((f) => Object.keys(f).some((k) => !["type", "key", "mandatory"].includes(k)))
     );
-    check(
+    apiCall.addBodyCheck(
       "'forceFormDisplay' is of type boolean if it is set",
       body.forceFormDisplay == null || typeof body.forceFormDisplay === "boolean"
     );
-    check(
+    apiCall.addBodyCheck(
       "'disableAccountCreation' is of type boolean if it is set",
       body.disableAccountCreation == null || typeof body.disableAccountCreation === "boolean"
     );
-    check(
+    apiCall.addBodyCheck(
       "result contains only standard keys",
       !Object.keys(body).some(
         (k) => !["fields", "forceFormDisplay", "generalConfigVersion", "disableAccountCreation"].includes(k)
       )
     );
   }
+  return apiCall;
 };
 
 module.exports = async function () {
-  displayBold("Testing /button-config");
+  const testGroup = new TestGroup("Route /button-config");
   const configResponse = await get("/config");
   const config = await configResponse.json();
+
   for (let i = 0; i < buttonIds.length; i++) {
     const buttonId = buttonIds[i];
-    const response = await get("/button-config?buttonId=" + buttonId);
-    await testButtonConfigResponse(response, config);
+    await testButtonConfigResponse(testGroup, { buttonId }, config);
   }
 
-  const response = await get("/button-config?buttonId=unknown");
-  check("returns 404 for unknown buttonId received " + response.status, response.status === 404);
+  const apiCall = testGroup.newApiCall("GET", "/button-config", "for unknown buttonId", { buttonId: "unknown" });
+  await apiCall.checkStatus([404]);
+
+  return { testGroup };
 };

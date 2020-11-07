@@ -1,91 +1,87 @@
 const moment = require("moment");
-const { head, get, displayBold, fieldTypes, check, attempt } = require("./helpers");
+const { head, fieldTypes } = require("./helpers");
+const { TestGroup, RouteTest } = require("./report-builder");
 
-const testConfigResponse = async (response) => {
-  check("returns a 200 - received " + response.status, response.status === 200);
-  const body = await attempt("returns a JSON body", response.json());
+const testConfigResponse = async (testGroup, context, queryParameters) => {
+  const apiCall = testGroup.newApiCall("GET", "/config", context, queryParameters);
+  await apiCall.checkStatus([200]);
+  const body = await apiCall.getJSON();
   if (body) {
-    check("result contains 'version'", !!body.version);
-    check("'version' is of type string", typeof body.version === "string");
-    check("result contains 'fields'", !!body.fields);
-    check("'fields' is of type array", Array.isArray(body.fields));
-    check("each field has a 'type' and a 'key'", !body.fields.find((f) => !f.type || !f.key));
-    check("each field 'type' is standard", !body.fields.find((f) => !fieldTypes.includes(f.type)));
-    check(
+    apiCall.addBodyCheck("result contains 'version'", !!body.version);
+    apiCall.addBodyCheck("'version' is of type string", typeof body.version === "string");
+    apiCall.addBodyCheck("result contains 'fields'", !!body.fields);
+    apiCall.addBodyCheck("'fields' is of type array", Array.isArray(body.fields));
+    apiCall.addBodyCheck("each field has a 'type' and a 'key'", !body.fields.find((f) => !f.type || !f.key));
+    apiCall.addBodyCheck("each field 'type' is standard", !body.fields.find((f) => !fieldTypes.includes(f.type)));
+    apiCall.addBodyCheck(
       "each field has a unique 'key'",
       !body.fields.some((f) => body.fields.filter((g) => g.key === f.key).length !== 1)
     );
-    check(
+    apiCall.addBodyCheck(
       "each field has a unique 'customLabel' if it has one",
       !body.fields.some(
         (f) => !!f.customLabel && body.fields.filter((g) => g.customLabel === f.customLabel).length !== 1
       )
     );
-    check(
+    apiCall.addBodyCheck(
       "each field has a unique 'variant' if it has one that is not 'custom'",
       !body.fields.some(
         (f) => !!f.variant && f.variant !== "custom" && body.fields.filter((g) => g.variant === f.variant).length !== 1
       )
     );
-    check(
+    apiCall.addBodyCheck(
       "no field has non-standard object keys",
       !body.fields.some((f) =>
         Object.keys(f).some((k) => !["type", "key", "mandatory", "variant", "customLabel"].includes(k))
       )
     );
-    check("result contains 'legalTerms'", !!body.legalTerms);
+    apiCall.addBodyCheck("result contains 'legalTerms'", !!body.legalTerms);
     if (body.legalTerms) {
-      check("'legalTerms' is of type array", Array.isArray(body.legalTerms));
-      check(
+      apiCall.addBodyCheck("'legalTerms' is of type array", Array.isArray(body.legalTerms));
+      apiCall.addBodyCheck(
         "each legalTerm has an 'id', a 'date', a 'link' and a 'translatedText'",
         !body.legalTerms.find((l) => !l.id || !l.date || !l.link || !l.translatedText)
       );
-      check(
+      apiCall.addBodyCheck(
         "each legalTerm has a unique 'id'",
         !body.legalTerms.some((l) => body.legalTerms.filter((m) => m.id === l.id).length !== 1)
       );
-      check(
+      apiCall.addBodyCheck(
         "each legalTerm has a unique 'link'",
         !body.legalTerms.some((l) => body.legalTerms.filter((m) => m.link === l.link).length !== 1)
       );
-      check(
+      apiCall.addBodyCheck(
         "each legalTerm has a unique 'translatedText'",
         !body.legalTerms.some((l) => body.legalTerms.filter((m) => m.translatedText === l.translatedText).length !== 1)
       );
-      check(
+      apiCall.addBodyCheck(
         "no legalTerm has non-standard object keys",
         !body.legalTerms.some((l) => Object.keys(l).some((k) => !["id", "date", "link", "translatedText"].includes(k)))
       );
       for (let i = 0; i < body.legalTerms.length; i++) {
         const legalTerm = body.legalTerms[i];
         const linkResponse = await head(legalTerm.link);
-        check(
-          legalTerm.translatedText + " - Legal term's link returns a 200 on a GET - received " + linkResponse.status,
-          linkResponse.status === 200
+        apiCall.addBodyCheck(
+          legalTerm.translatedText + " - Legal term's link returns a 200 on a GET",
+          linkResponse.status === 200,
+          "Received " + linkResponse.status
         );
-        check(
+        apiCall.addBodyCheck(
           legalTerm.translatedText + " - Legal term's date must be a valid date with format YYYY-MM-MM",
           moment(legalTerm.date, "YYYY-MM-DD").isValid()
         );
       }
     }
   }
+  return apiCall;
 };
 
 module.exports = async function () {
-  displayBold("Testing /config");
-  let response = await get("/config?lang=fr");
-  await testConfigResponse(response);
-
-  response = await get("/config?lang=fr-BE");
-  await testConfigResponse(response);
-
-  response = await get("/config?lang=");
-  await testConfigResponse(response);
-
-  response = await get("/config?lang=unknown");
-  await testConfigResponse(response);
-
-  response = await get("/config");
-  await testConfigResponse(response);
+  const testGroup = new TestGroup("Route /config");
+  await testConfigResponse(testGroup, "with lang=fr", { lang: "fr" });
+  await testConfigResponse(testGroup, "with lang=fr-BE", { lang: "fr-BE" });
+  await testConfigResponse(testGroup, "with empty lang", { lang: "" });
+  await testConfigResponse(testGroup, "with unknown lang", { lang: "unknown" });
+  await testConfigResponse(testGroup, "with no lang");
+  return { testGroup };
 };

@@ -1,29 +1,33 @@
 const moment = require("moment");
 const { validUserWithLogin, validUserWithToken } = require("../context");
-const { get, post, displayBold, check, checkSecurity, attempt, fieldTypes } = require("./helpers");
+const { get, post, fieldTypes } = require("./helpers");
+const { TestGroup, RouteTest } = require("./report-builder");
 
-const checkConversionResult = async (body, config) => {
-  check("returns a 'userId' - received " + body.userId, !!body.userId);
+const checkConversionResult = async (apiCall, body, config) => {
+  apiCall.addBodyCheck("returns a 'userId' - received " + body.userId, !!body.userId);
   if (body.userData) {
-    check("if body contains a 'userData', it must be an array", Array.isArray(body.userData));
+    apiCall.addBodyCheck("if body contains a 'userData', it must be an array", Array.isArray(body.userData));
     if (Array.isArray(body.userData)) {
-      check(
+      apiCall.addBodyCheck(
         "each userData has at most a 'key', a'type' and a 'value'",
         !body.userData.some((d) => Object.keys(d).some((k) => !["key", "type", "value"].includes(k)))
       );
-      check(
+      apiCall.addBodyCheck(
         "each userData has necessarily a 'key', a 'type' and a 'value'",
         !body.userData.some((d) => !d.key || !d.type || !d.value)
       );
-      check("each userData 'type' is standard", !body.userData.find((f) => !fieldTypes.includes(f.type)));
-      check(
+      apiCall.addBodyCheck(
+        "each userData 'type' is standard",
+        !body.userData.find((f) => !fieldTypes.includes(f.type))
+      );
+      apiCall.addBodyCheck(
         "each userData has a unique 'key'",
         !body.userData.some((f) => body.userData.filter((g) => g.key === f.key).length !== 1)
       );
       for (let i = 0; i < body.userData.length; i++) {
         const userData = body.userData[i];
         if (config && config.fields && Array.isArray(config.fields)) {
-          check(
+          apiCall.addBodyCheck(
             "in userData, data '" +
               userData.key +
               "' has a 'type' and a 'key' that matches one of the 'fields' return by /config",
@@ -33,27 +37,30 @@ const checkConversionResult = async (body, config) => {
         switch (userData.type) {
           case "firstname":
           case "lastname":
-            check(userData.key + " has a string value", typeof userData.value === "string");
+            apiCall.addBodyCheck(userData.key + " has a string value", typeof userData.value === "string");
             break;
           case "title":
-            check(userData.key + " has a 'M' or 'F' value", userData.value === "M" || userData.value === "F");
+            apiCall.addBodyCheck(
+              userData.key + " has a 'M' or 'F' value",
+              userData.value === "M" || userData.value === "F"
+            );
             break;
           case "dateOfBirth":
-            check(
+            apiCall.addBodyCheck(
               userData.key + " has a valid date value in format YYYY-MM-DD",
               moment(userData.value, "YYYY-MM-DD").isValid()
             );
             break;
           case "email":
-            check(userData.key + " has an object value containing 'address'", !!userData.value.address);
+            apiCall.addBodyCheck(userData.key + " has an object value containing 'address'", !!userData.value.address);
             break;
           case "phoneNumber":
-            check(userData.key + " has an object value containing 'number'", !!userData.value.number);
-            check(userData.key + " 'number' starts with '+'", userData.value.number.startsWith("+"));
+            apiCall.addBodyCheck(userData.key + " has an object value containing 'number'", !!userData.value.number);
+            apiCall.addBodyCheck(userData.key + " 'number' starts with '+'", userData.value.number.startsWith("+"));
             break;
           case "postalAddress":
-            check(userData.key + " has an array value", Array.isArray(userData.value));
-            check(
+            apiCall.addBodyCheck(userData.key + " has an array value", Array.isArray(userData.value));
+            apiCall.addBodyCheck(
               "in " +
                 userData.key +
                 " all addresses contain at least 'streetAddress', 'city', 'postalCode' and 'country'",
@@ -61,10 +68,13 @@ const checkConversionResult = async (body, config) => {
             );
             break;
           case "iban":
-            check(userData.key + " has an object value containing at least 'IBAN'", !!userData.value.IBAN);
+            apiCall.addBodyCheck(
+              userData.key + " has an object value containing at least 'IBAN'",
+              !!userData.value.IBAN
+            );
             break;
           case "newsletterConsent":
-            check(
+            apiCall.addBodyCheck(
               userData.key + " has an object value containing 'email', 'postal_mail', 'phone', 'sms'",
               typeof userData.value.email === "boolean" &&
                 typeof userData.value.postal_mail === "boolean" &&
@@ -73,7 +83,7 @@ const checkConversionResult = async (body, config) => {
             );
             break;
           default:
-            check("THIS IS A BUG IN THE TESTER", false);
+            apiCall.addBodyCheck("THIS IS A BUG IN THE TESTER", false);
         }
       }
     }
@@ -81,131 +91,111 @@ const checkConversionResult = async (body, config) => {
 };
 
 module.exports = async function () {
-  displayBold("Testing /convert-account");
-  let response = await post("/convert-account", null);
-  check("returns a 400 with a null body - received " + response.status, response.status === 400);
+  const testGroup = new TestGroup("Route /convert-account");
+  let apiCall = testGroup.newApiCall("POST", "/convert-account", "when body is null", null);
+  await apiCall.checkStatus([400]);
 
-  response = await post("/convert-account", { body: JSON.stringify({}) });
-  check("returns a 400 with an empty body - received " + response.status, response.status === 400);
+  apiCall = testGroup.newApiCall("POST", "/convert-account", "when body is empty", {});
+  await apiCall.checkStatus([400]);
 
-  response = await post("/convert-account", {
-    body: JSON.stringify({ currentPassword: "password", newPassword: "newPassword" }),
+  apiCall = testGroup.newApiCall("POST", "/convert-account", "when currentLogin is missing", {
+    currentPassword: "password",
+    newPassword: "newPassword",
   });
-  check("returns a 400 with an missing currentLogin - received " + response.status, response.status === 400);
+  await apiCall.checkStatus([400]);
 
-  response = await post("/convert-account", {
-    body: JSON.stringify({ currentLogin: "login", newPassword: "newPassword" }),
+  apiCall = testGroup.newApiCall("POST", "/convert-account", "when currentPassword is missing", {
+    currentLogin: "login",
+    newPassword: "newPassword",
   });
-  checkSecurity(
-    "returns a 400 or 401 with an missing currentPassword - received " + response.status,
-    response.status === 400 || response.status === 401
+  await apiCall.checkStatus([400, 401]);
+
+  apiCall = testGroup.newApiCall("POST", "/convert-account", "with connectionToken but missing newPassword", {
+    connectionToken: "token",
+  });
+  await apiCall.checkStatus([400]);
+
+  apiCall = testGroup.newApiCall(
+    "POST",
+    "/convert-account",
+    "with currentLogin & currentPassword but missing newPassword",
+    {
+      currentLogin: "login",
+      currentPassword: "password",
+    }
   );
+  await apiCall.checkStatus([400]);
 
-  response = await post("/convert-account", {
-    body: JSON.stringify({ connectionToken: "token" }),
-  });
-  check(
-    "returns a 400 with connectionToken but missing newPassword - received " + response.status,
-    response.status === 400
-  );
-
-  response = await post("/convert-account", {
-    body: JSON.stringify({ currentLogin: "login", currentPassword: "password" }),
-  });
-  check(
-    "returns a 400 with currentLogin & currentPassword but missing newPassword - received " + response.status,
-    response.status === 400
-  );
-
-  response = await post("/convert-account", {
-    body: JSON.stringify({
+  apiCall = testGroup.newApiCall(
+    "POST",
+    "/convert-account",
+    "with currentLogin & currentPassword & connectionToken & newPassword (too many arguments)",
+    {
       currentLogin: "login",
       currentPassword: "password",
       connectionToken: "token",
       newPassword: "newPassword",
-    }),
-  });
-  check(
-    "returns a 400 with currentLogin & currentPassword & connectionToken & newPassword - received " + response.status,
-    response.status === 400
+    }
   );
+  await apiCall.checkStatus([400]);
 
-  response = await post("/convert-account", {
-    body: JSON.stringify({
-      currentLogin: "login",
-      currentPassword: "password",
-      newPassword: "newPassword",
-    }),
+  apiCall = testGroup.newApiCall("POST", "/convert-account", "when login does not match a valid user", {
+    currentLogin: "login",
+    currentPassword: "password",
+    newPassword: "newPassword",
   });
-  checkSecurity(
-    "returns a 401 when login does not match a valid user - received " + response.status,
-    response.status === 401
-  );
+  await apiCall.checkStatus([401]);
 
-  response = await post("/convert-account", {
-    body: JSON.stringify({
+  apiCall = testGroup.newApiCall(
+    "POST",
+    "/convert-account",
+    "when currentPassword does not match a valid currentLogin",
+    {
       currentLogin: validUserWithLogin.currentLogin,
       currentPassword: "badPassword",
       newPassword: "newPassword",
-    }),
-  });
-  checkSecurity(
-    "returns a 401 when currentPassword does not match a valid currentLogin - received " + response.status,
-    response.status === 401
+    }
   );
+  await apiCall.security().checkStatus([401]);
 
   // get config for later check
   const configResponse = await get("/config");
   const config = await configResponse.json();
 
-  response = await post("/convert-account", {
-    body: JSON.stringify({
-      currentLogin: validUserWithLogin.currentLogin,
-      currentPassword: validUserWithLogin.currentPassword,
-      newPassword: "newPasswordForConversion",
-    }),
+  apiCall = testGroup.newApiCall("POST", "/convert-account", "when currentPassword matches currentLogin", {
+    currentLogin: validUserWithLogin.currentLogin,
+    currentPassword: validUserWithLogin.currentPassword,
+    newPassword: "newPasswordForConversion",
   });
-  check(
-    "returns a 200 when currentPassword matches currentLogin - received " + response.status,
-    response.status === 200
-  );
-  const body1 = await attempt("returns a JSON body when currentPassword matches currentLogin", response.json());
+  await apiCall.checkStatus([200]);
+  const body1 = await apiCall.getJSON();
   if (body1) {
-    await checkConversionResult(body1, config);
+    await checkConversionResult(apiCall, body1, config);
     // revert password change
     await post("/update-password", {
-      body: JSON.stringify({
-        userId: body1.userId,
-        password: "newPasswordForConversion",
-        newPassword: validUserWithLogin.currentPassword,
-      }),
+      userId: body1.userId,
+      password: "newPasswordForConversion",
+      newPassword: validUserWithLogin.currentPassword,
     });
   }
 
-  response = await post("/convert-account", {
-    body: JSON.stringify({
-      connectionToken: validUserWithToken.connectionToken,
-      newPassword: "newPasswordForConversion",
-    }),
+  apiCall = testGroup.newApiCall("POST", "/convert-account", "when connectionToken is valid", {
+    connectionToken: validUserWithToken.connectionToken,
+    newPassword: "newPasswordForConversion",
   });
-  check("returns a 200 when connectionToken is valid - received " + response.status, response.status === 200);
-  const body2 = await attempt("returns a JSON body when connnectionToken is valid", response.json());
+  await apiCall.checkStatus([200]);
+  const body2 = await apiCall.getJSON();
   if (body2) {
-    await checkConversionResult(body2, config);
-    response = await post("/convert-account", {
-      body: JSON.stringify({
-        connectionToken: validUserWithToken.connectionToken,
-        newPassword: "newPasswordForConversion",
-      }),
-    });
-    checkSecurity(
-      "connectionToken cannot be used twice to convert an account - received " + response.status,
-      response.status === 401
-    );
+    await checkConversionResult(apiCall, body2, config);
   }
+  apiCall = testGroup.newApiCall("POST", "/convert-account", "when connectionToken is replayed", {
+    connectionToken: validUserWithToken.connectionToken,
+    newPassword: "newPasswordForConversion",
+  });
+  await apiCall.security().checkStatus([401]);
 
   if (body1) {
-    return { userId: body1.userId, password: validUserWithLogin.currentPassword };
+    return { testGroup, userId: body1.userId, password: validUserWithLogin.currentPassword };
   }
-  return null;
+  return { testGroup };
 };

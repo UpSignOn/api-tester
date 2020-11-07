@@ -1,58 +1,56 @@
-const { post, displayBold, check, checkSecurity, attempt } = require("./helpers");
+const { TestGroup, RouteTest } = require("./report-builder");
 
 module.exports = async function (credentials) {
-  displayBold("Testing /delete-account-and-data");
-  let response = await post("/delete-account-and-data", null);
-  check(
-    "returns a 400 or 401 with null body - received " + response.status,
-    response.status === 400 || response.status === 401
-  );
+  const testGroup = new TestGroup("Route /delete-account-and-data");
 
-  response = await post("/delete-account-and-data", { body: JSON.stringify({}) });
-  check(
-    "returns a 400 or 401 with empty body - received " + response.status,
-    response.status === 400 || response.status === 401
-  );
+  let apiCall = testGroup.newApiCall("POST", "/delete-account-and-data", "when body is null", null);
+  await apiCall.checkStatus([400]);
 
-  response = await post("/delete-account-and-data", { body: JSON.stringify({ password: "password" }) });
-  check(
-    "returns a 400 or 401 with missing userId - received " + response.status,
-    response.status === 400 || response.status === 401
-  );
+  apiCall = testGroup.newApiCall("POST", "/delete-account-and-data", "when body is empty", {});
+  await apiCall.checkStatus([400, 401]);
 
-  response = await post("/delete-account-and-data", { body: JSON.stringify({ userId: credentials.userId }) });
-  checkSecurity(
-    "returns a 400 or 401 with missing password - received " + response.status,
-    response.status === 400 || response.status === 401
-  );
-
-  response = await post("/delete-account-and-data", {
-    body: JSON.stringify({ userId: credentials.userId, password: "badPasswordldjkfh" }),
+  apiCall = testGroup.newApiCall("POST", "/delete-account-and-data", "when userId is missing", {
+    password: "password",
   });
-  checkSecurity("returns a 401 with bad password - received " + response.status, response.status === 401);
+  await apiCall.checkStatus([400, 401]);
 
-  response = await post("/delete-account-and-data", {
-    body: JSON.stringify({ userId: "c309faba-e7d5-4ea3-bf4f-f888b069197e", password: "anyPassword" }),
+  apiCall = testGroup.newApiCall("POST", "/delete-account-and-data", "when password is missing", {
+    userId: credentials.userId,
   });
-  check("returns a 200 for unkown userId - received " + response.status, response.status === 200);
-  let body = await attempt("returns a JSON body for unknown userId", response.json());
+  await apiCall.security().checkStatus([400, 401]);
+
+  apiCall = testGroup.newApiCall("POST", "/delete-account-and-data", "when password is wrong", {
+    userId: credentials.userId,
+    password: "badPasswordldjkfh",
+  });
+  await apiCall.security().checkStatus([401]);
+
+  apiCall = testGroup.newApiCall("POST", "/delete-account-and-data", "when userId is unknown", {
+    userId: "c309faba-e7d5-4ea3-bf4f-f888b069197e",
+    password: "anyPassword",
+  });
+  await apiCall.checkStatus([200]);
+  let body = await apiCall.getJSON();
   if (body) {
-    check(
-      "returns 'deletionStatus: DONE' with an unknown userId - received " + response.status,
+    apiCall.addBodyCheck(
+      "returns 'deletionStatus: DONE' with an unknown userId - received " + body.deletionStatus,
       body.deletionStatus === "DONE"
     );
   }
-  response = await post("/delete-account-and-data", {
-    body: JSON.stringify(credentials),
-  });
-  check("returns a 200 for correct credentials - received " + response.status, response.status === 200);
-  body = await attempt("returns a JSON body for correct credentials", response.json());
+
+  apiCall = testGroup.newApiCall("POST", "/delete-account-and-data", "for correct credentials", credentials);
+  await apiCall.checkStatus([200]);
+  body = await apiCall.getJSON();
   if (body) {
-    check(
+    apiCall.addBodyCheck(
       "returns a 'deletionStatus' that is either 'DONE' or 'DENIED' or 'PENDING' with correct credentials - received " +
         body.deletionStatus,
       body.deletionStatus === "DONE" || body.deletionStatus === "DENIED" || body.deletionStatus === "PENDING"
     );
   }
-  return body.deletionStatus;
+
+  return {
+    testGroup,
+    deletionStatus: body.deletionStatus,
+  };
 };

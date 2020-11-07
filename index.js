@@ -1,4 +1,4 @@
-const { showFinalMessageAndExit } = require("./src/helpers");
+const { AllTests } = require("./src/report-builder");
 const testConfig = require("./src/test-config");
 const testButtonConfig = require("./src/test-button-config");
 const testCreateAccount = require("./src/test-create-account");
@@ -11,23 +11,48 @@ const testConvertAccount = require("./src/test-convert-account");
 
 const runTests = async () => {
   try {
-    await testConfig();
-    await testButtonConfig();
-    await testConnectErrorCases();
-    const credentials = await testCreateAccount();
-    if (credentials && credentials.userId) {
-      await testConnect(credentials);
-      await testUpdateData(credentials);
-      const newCredentials = await testUpdatePassword(credentials);
-      const deletionStatus = await testDeleteAccountAndData(newCredentials);
-      if (deletionStatus === "PENDING") {
-        await testGetAccountDeletionStatus(newCredentials);
+    const allTests = [];
+
+    const configResult = await testConfig();
+    allTests.push(configResult.testGroup);
+
+    const buttonConfigResult = await testButtonConfig();
+    allTests.push(buttonConfigResult.testGroup);
+
+    const connectErrorCasesResult = await testConnectErrorCases();
+    allTests.push(connectErrorCasesResult.testGroup);
+
+    const createAccountResult = await testCreateAccount();
+    allTests.push(createAccountResult.testGroup);
+    if (createAccountResult && createAccountResult.userId) {
+      const credentials = { userId: createAccountResult.userId, password: createAccountResult.password };
+      const connectResult = await testConnect(credentials);
+      allTests.push(connectResult.testGroup);
+
+      const updateDataResult = await testUpdateData(credentials);
+
+      const updatePasswordResult = await testUpdatePassword(credentials);
+      allTests.push(updatePasswordResult.testGroup);
+
+      const newCredentials = { userId: updatePasswordResult.userId, password: updatePasswordResult.password };
+      const accountDeletionResult = await testDeleteAccountAndData(newCredentials);
+      allTests.push(accountDeletionResult.testGroup);
+
+      if (accountDeletionResult.deletionStatus === "PENDING") {
+        const deletionStatusResult = await testGetAccountDeletionStatus(newCredentials);
+        allTests.push(deletionStatusResult.testGroup);
       }
     }
-    const convertedAcountCredentials = await testConvertAccount();
-    if (convertedAcountCredentials && convertedAcountCredentials.userId) {
-      await testConnect(convertedAcountCredentials);
+    const convertAccountResult = await testConvertAccount();
+    allTests.push(convertAccountResult.testGroup);
+
+    if (convertAccountResult && convertAccountResult.userId) {
+      const convertedCredentials = { userId: convertAccountResult.userId, password: convertAccountResult.password };
+      const connectAfterConversionResult = await testConnect(convertedCredentials);
+      allTests.push(connectAfterConversionResult.testGroup);
     }
+
+    new AllTests(allTests).toConsole();
   } catch (e) {
     console.log(e);
     displayError(
@@ -37,4 +62,4 @@ const runTests = async () => {
   }
 };
 
-runTests().then(showFinalMessageAndExit);
+runTests();
