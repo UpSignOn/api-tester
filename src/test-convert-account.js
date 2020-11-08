@@ -159,8 +159,8 @@ module.exports = async function () {
   await apiCall.security().checkStatus([401]);
 
   // get config for later check
-  const configResponse = await get("/config");
-  const config = await configResponse.json();
+  const configReq = await get("/config");
+  const config = await configReq.response.json();
 
   apiCall = testGroup.newApiCall("POST", "/convert-account", "when currentPassword matches currentLogin", {
     currentLogin: validUserWithLogin.currentLogin,

@@ -2,6 +2,11 @@
 # yarn lockfile v1
 
 
+fetch-to-curl@^0.4.0:
+  version "0.4.0"
+  resolved "https://registry.yarnpkg.com/fetch-to-curl/-/fetch-to-curl-0.4.0.tgz#03d9b91d7c23db38090f580b645f553baf12033f"
+  integrity sha512-yPWEo0kkg3F/8vZoINdnSL4GXkq5q96MlQR2r7iI5DecU7OdBvcZZsZEw+Puw55m8cOerDPpQkTsw04MLK1qXA==
+
 moment@^2.29.1:
   version "2.29.1"
   resolved "https://registry.yarnpkg.com/moment/-/moment-2.29.1.tgz#b2be769fa31940be9eeea6469c075e35006fa3d3"

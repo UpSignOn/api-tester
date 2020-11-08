@@ -4,9 +4,11 @@
   "license": "UNLICENSED",
   "private": false,
   "scripts": {
+    "restore": "./restore-db.sh",
     "start": "node ./index.js"
   },
   "dependencies": {
+    "fetch-to-curl": "^0.4.0",
     "moment": "^2.29.1",
     "node-fetch": "^2.6.1"
   },

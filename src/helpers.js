@@ -1,5 +1,6 @@
-const { url } = require("../context");
 const fetch = require("node-fetch");
+const { fetchToCurl } = require("fetch-to-curl");
+const { url } = require("../context");
 
 const fieldTypes = [
   "firstname",
@@ -14,20 +15,27 @@ const fieldTypes = [
 ];
 
 const head = (uri) => {
+  console.log("    head request for " + uri);
   return fetch(uri, {
     method: "HEAD",
   });
 };
-const get = (route) => {
-  return fetch(`${url}${route}`, {
+const get = async (route) => {
+  const req = `${url}${route}`;
+  const options = {
     method: "GET",
     headers: {
       Accept: "application/json",
       "Content-Type": "application/json",
     },
-  });
+  };
+  return {
+    curl: fetchToCurl(req, options),
+    response: await fetch(req, options),
+  };
 };
-const post = (route, body) => {
+const post = async (route, body) => {
+  const req = `${url}${route}`;
   const options = {
     method: "POST",
     headers: {
@@ -38,7 +46,10 @@ const post = (route, body) => {
   if (body) {
     options.body = JSON.stringify(body);
   }
-  return fetch(`${url}${route}`, options);
+  return {
+    curl: fetchToCurl(req, options),
+    response: await fetch(req, options),
+  };
 };
 
 module.exports = {

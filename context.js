@@ -1,6 +1,6 @@
 const devUrl = "http://192.168.1.11:8888/demo";
 
-const buttonIds = ["SHOP"];
+const buttonIds = ["SHOP1", "SHOP2"];
 
 // For conversion
 const validUserWithLogin = {

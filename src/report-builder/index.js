@@ -18,7 +18,9 @@ class AllTests {
   }
   areAllTestsOK() {
     return !this.testGroups.some((testGroup) => {
-      testGroup.routeTests.some((routeTest) => routeTest.tests.some((test) => test.successStatus !== "SUCCESS"));
+      return !!testGroup.routeTests.some((routeTest) =>
+        routeTest.tests.some((test) => test.successStatus !== "SUCCESS")
+      );
     });
   }
   toConsole() {
@@ -27,8 +29,9 @@ class AllTests {
       console.log("\x1b[1m", group.title, "\x1b[0m");
       group.routeTests.forEach((routeTest) => {
         console.log(`- ${routeTest.method} ${routeTest.route} ${routeTest.context}`);
-        if (routeTest.method === "GET") console.log(`    query parameters = ${routeTest.queryParameters}`);
-        if (routeTest.method === "POST") console.log(`    body = ${JSON.stringify(routeTest.body)}`);
+        if (routeTest.method === "GET") console.log(`    query parameters: ${routeTest.queryParameters}`);
+        if (routeTest.method === "POST") console.log(`    body: ${JSON.stringify(routeTest.body)}`);
+        console.log(`    ${routeTest.curl}`);
         routeTest.tests.forEach((test) => {
           let message = "    ";
           // display background blue
@@ -86,8 +89,16 @@ class RouteTest {
   }
   async checkStatus(expectedStatuses) {
     try {
-      if (this.method === "GET") this.response = await get(this.route + this.queryParameters);
-      if (this.method === "POST") this.response = await post(this.route, this.body);
+      if (this.method === "GET") {
+        const req = await get(this.route + this.queryParameters);
+        this.response = req.response;
+        this.curl = req.curl;
+      }
+      if (this.method === "POST") {
+        const req = await post(this.route, this.body);
+        this.response = req.response;
+        this.curl = req.curl;
+      }
 
       const successCondition = expectedStatuses.includes(this.response.status);
       this.tests.push({

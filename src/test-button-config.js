@@ -48,8 +48,8 @@ const testButtonConfigResponse = async (testGroup, queryParameters, config) => {
 
 module.exports = async function () {
   const testGroup = new TestGroup("Route /button-config");
-  const configResponse = await get("/config");
-  const config = await configResponse.json();
+  const configReq = await get("/config");
+  const config = await configReq.response.json();
 
   for (let i = 0; i < buttonIds.length; i++) {
     const buttonId = buttonIds[i];

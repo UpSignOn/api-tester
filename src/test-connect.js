@@ -41,7 +41,7 @@ const testConnect = async (credentials) => {
     buttonId: buttonId,
   });
   await apiCall.security().checkStatus([200]);
-  const body = apiCall.getJSON();
+  const body = await apiCall.getJSON();
   if (body) {
     apiCall.addBodyCheck(
       "response should contain a 'connectionToken' - received " + body.connectionToken,
@@ -75,29 +75,25 @@ const testConnect = async (credentials) => {
           "'redirectionUri' should not return a 200 on GET without token - received " + uriResponse.status,
           uriResponse.status !== 200
         );
-        uriResponse = await head(
-          body.redirectionUri + "?userId=" + credentials.userId + "&connectionToken=" + body.connectionToken
-        );
+        const redirectionWithBadToken = `${body.redirectionUri}${
+          !!body.redirectionUri && body.redirectionUri.indexOf("?") !== -1 ? "&" : "?"
+        }userId=${credentials.userId}&connectionToken=badToken`;
+        const redirectionWithGoodToken = `${body.redirectionUri}${
+          !!body.redirectionUri && body.redirectionUri.indexOf("?") !== -1 ? "&" : "?"
+        }userId=${credentials.userId}&connectionToken=${body.connectionToken}`;
+        uriResponse = await head(redirectionWithBadToken);
         apiCall
           .security()
           .addBodyCheck(
             "'redirectionUri' should not return a 200 on GET with a bad token - received " + uriResponse.status,
             uriResponse.status !== 200
           );
-        uriResponse = await head(
-          `${body.redirectionUri}${
-            !!body.redirectionUri && body.redirectionUri.indexOf("?") !== -1 ? "&" : "?"
-          }userId=${credentials.userId}&connectiontoken=${body.connectionToken}`
-        );
+        uriResponse = await head(redirectionWithGoodToken);
         apiCall.addBodyCheck(
           "'redirectionUri' should return a 200 on GET with a good token - received " + uriResponse.status,
           uriResponse.status === 200
         );
-        uriResponse = await head(
-          `${body.redirectionUri}${
-            !!body.redirectionUri && body.redirectionUri.indexOf("?") !== -1 ? "&" : "?"
-          }userId=${credentials.userId}&connectiontoken=${body.connectionToken}`
-        );
+        uriResponse = await head(redirectionWithGoodToken);
         apiCall
           .security()
           .addBodyCheck(
