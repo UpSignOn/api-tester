@@ -23,8 +23,8 @@ This tests are not complete. Some things cannot be tested with this module.
 
 - clone this repo
 - inside the repo folder, run `npm install`
-- edit `context.js` with your own values
-- run `npm start`
+- edit `context.js` and `restore-test-db.sql` with your own values
+- run `npm restore & npm start`
 
 # Known issue
 
