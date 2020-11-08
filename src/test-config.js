@@ -1,5 +1,5 @@
 const moment = require("moment");
-const { head, fieldTypes } = require("./helpers");
+const { head, fieldTypes } = require("./report-builder/helpers");
 const { TestGroup, RouteTest } = require("./report-builder");
 
 const testConfigResponse = async (testGroup, context, queryParameters) => {

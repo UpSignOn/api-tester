@@ -1,6 +1,6 @@
 const fetch = require("node-fetch");
 const { fetchToCurl } = require("fetch-to-curl");
-const { url } = require("../context");
+const { url } = require("../../context");
 
 const fieldTypes = [
   "firstname",

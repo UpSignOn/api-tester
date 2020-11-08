@@ -1,4 +1,4 @@
-const { head } = require("./helpers");
+const { head } = require("./report-builder/helpers");
 const { TestGroup, RouteTest } = require("./report-builder");
 
 const testConnectErrorCases = async () => {

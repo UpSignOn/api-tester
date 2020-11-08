@@ -1,5 +1,5 @@
 const { buttonIds } = require("../context");
-const { get, displayBold, check, attempt } = require("./helpers");
+const { get, displayBold, check, attempt } = require("./report-builder/helpers");
 const { TestGroup, RouteTest } = require("./report-builder");
 
 const testButtonConfigResponse = async (testGroup, queryParameters, config) => {

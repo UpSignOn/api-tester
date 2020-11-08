@@ -1,5 +1,5 @@
 const fetch = require("node-fetch");
-const { get, post } = require("../helpers");
+const { get, post } = require("./helpers");
 
 const queryParametersToString = (qp) => {
   if (qp)

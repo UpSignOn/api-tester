@@ -1,6 +1,6 @@
 const moment = require("moment");
 const { validUserWithLogin, validUserWithToken } = require("../context");
-const { get, post, fieldTypes } = require("./helpers");
+const { get, post, fieldTypes } = require("./report-builder/helpers");
 const { TestGroup, RouteTest } = require("./report-builder");
 
 const checkConversionResult = async (apiCall, body, config) => {
