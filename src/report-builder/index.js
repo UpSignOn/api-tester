@@ -39,6 +39,8 @@ class AllTests {
               queryParameters: routeTest.queryParameters,
               body: routeTest.body,
               curl: routeTest.curl,
+              responseStatus: routeTest.response.status,
+              responseBody: routeTest.responseBody,
               responseTests: routeTest.tests,
             };
           }),
