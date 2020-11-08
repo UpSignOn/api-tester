@@ -52,7 +52,7 @@ const runTests = async () => {
       allTests.push(connectAfterConversionResult.testGroup);
     }
 
-    new AllTests(allTests).toConsole();
+    new AllTests(allTests).logSummaryAndExit();
   } catch (e) {
     console.log(e);
     displayError(
