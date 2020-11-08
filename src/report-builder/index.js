@@ -26,22 +26,25 @@ class AllTests {
     });
   }
   getJSONReport() {
-    return this.testGroups.map((groupTest) => {
-      return {
-        groupTitle: groupTest.title,
-        routeTests: groupTest.routeTests.map((routeTest) => {
-          return {
-            method: routeTest.method,
-            route: routeTest.route,
-            context: routeTest.context,
-            queryParameters: routeTest.queryParameters,
-            body: routeTest.body,
-            curl: routeTest.curl,
-            responseTests: routeTest.tests,
-          };
-        }),
-      };
-    });
+    return {
+      overallStatus: this.areAllTestsOK() ? "SUCCESS" : "FAIL",
+      details: this.testGroups.map((groupTest) => {
+        return {
+          groupTitle: groupTest.title,
+          routeTests: groupTest.routeTests.map((routeTest) => {
+            return {
+              method: routeTest.method,
+              route: routeTest.route,
+              context: routeTest.context,
+              queryParameters: routeTest.queryParameters,
+              body: routeTest.body,
+              curl: routeTest.curl,
+              responseTests: routeTest.tests,
+            };
+          }),
+        };
+      }),
+    };
   }
   async logSummaryAndExit() {
     fse.ensureDirSync("./reports");
