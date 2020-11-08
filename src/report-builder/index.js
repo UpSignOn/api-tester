@@ -1,4 +1,6 @@
 const fetch = require("node-fetch");
+const fse = require("fs-extra");
+const moment = require("moment");
 const { get, post } = require("./helpers");
 
 const queryParametersToString = (qp) => {
@@ -23,7 +25,29 @@ class AllTests {
       );
     });
   }
-  logSummaryAndExit() {
+  getJSONReport() {
+    return this.testGroups.map((groupTest) => {
+      return {
+        groupTitle: groupTest.title,
+        routeTests: groupTest.routeTests.map((routeTest) => {
+          return {
+            method: routeTest.method,
+            route: routeTest.route,
+            context: routeTest.context,
+            queryParameters: routeTest.queryParameters,
+            body: routeTest.body,
+            curl: routeTest.curl,
+            responseTests: routeTest.tests,
+          };
+        }),
+      };
+    });
+  }
+  async logSummaryAndExit() {
+    fse.ensureDirSync("./reports");
+    const reportName = "./reports/" + moment().format("YYYY-MM-DD-hh:mm:ss") + ".json";
+    const fileContent = JSON.stringify(this.getJSONReport(), null, "  ");
+    await fse.writeFile(reportName, fileContent);
     if (this.areAllTestsOK()) {
       // display green
       console.log("\x1b[32mALL TESTS PASSED!\x1b[0m");

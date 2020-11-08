@@ -1,3 +1,4 @@
 node_modules
 restore-test-db.sql
 restore-db.sh
+reports
