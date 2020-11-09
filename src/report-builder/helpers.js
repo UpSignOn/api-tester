@@ -1,32 +1,32 @@
-const fetch = require("node-fetch");
-const { fetchToCurl } = require("fetch-to-curl");
-const { url } = require("../../context");
+const fetch = require('node-fetch');
+const { fetchToCurl } = require('fetch-to-curl');
+const { url } = require('../../context');
 
 const fieldTypes = [
-  "firstname",
-  "lastname",
-  "title",
-  "dateOfBirth",
-  "email",
-  "phoneNumber",
-  "postalAddress",
-  "iban",
-  "newsletterConsent",
+  'firstname',
+  'lastname',
+  'title',
+  'dateOfBirth',
+  'email',
+  'phoneNumber',
+  'postalAddress',
+  'iban',
+  'newsletterConsent',
 ];
 
 const head = (uri) => {
-  console.log("    head request for " + uri);
+  console.log('    head request for ' + uri);
   return fetch(uri, {
-    method: "HEAD",
+    method: 'HEAD',
   });
 };
 const get = async (route) => {
   const req = `${url}${route}`;
   const options = {
-    method: "GET",
+    method: 'GET',
     headers: {
-      Accept: "application/json",
-      "Content-Type": "application/json",
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
     },
   };
   return {
@@ -37,10 +37,10 @@ const get = async (route) => {
 const post = async (route, body) => {
   const req = `${url}${route}`;
   const options = {
-    method: "POST",
+    method: 'POST',
     headers: {
-      Accept: "application/json",
-      "Content-Type": "application/json",
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
     },
   };
   if (body) {

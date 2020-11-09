@@ -1,53 +1,73 @@
-const { TestGroup, RouteTest } = require("./report-builder");
+const { TestGroup } = require('./report-builder');
 
 module.exports = async function (credentials) {
-  const testGroup = new TestGroup("Route /update-password");
+  const testGroup = new TestGroup('Route /update-password');
 
-  let apiCall = testGroup.newApiCall("POST", "/update-password", "with null body", null);
+  let apiCall = testGroup.newApiCall('POST', '/update-password', 'with null body', null);
   await apiCall.checkStatus([400, 401]);
 
-  apiCall = testGroup.newApiCall("POST", "/update-password", "with empty body", {});
+  apiCall = testGroup.newApiCall('POST', '/update-password', 'with empty body', {});
   await apiCall.checkStatus([400, 401]);
 
-  apiCall = testGroup.newApiCall("POST", "/update-password", "with missing userId", { password: "password" });
+  apiCall = testGroup.newApiCall('POST', '/update-password', 'with missing userId', {
+    password: 'password',
+  });
   await apiCall.checkStatus([400, 401]);
 
-  apiCall = testGroup.newApiCall("POST", "/update-password", "with missing newPassword", credentials);
+  apiCall = testGroup.newApiCall(
+    'POST',
+    '/update-password',
+    'with missing newPassword',
+    credentials,
+  );
   await apiCall.security().checkStatus([400, 401]);
 
-  apiCall = testGroup.newApiCall("POST", "/update-password", "with bad password and bad newPassword", {
-    userId: credentials.userId,
-    password: "BadPassword",
-    newPassword: "BadNewPassword",
-  });
+  apiCall = testGroup.newApiCall(
+    'POST',
+    '/update-password',
+    'with bad password and bad newPassword',
+    {
+      userId: credentials.userId,
+      password: 'BadPassword',
+      newPassword: 'BadNewPassword',
+    },
+  );
   await apiCall.security().checkStatus([401]);
 
-  apiCall = testGroup.newApiCall("POST", "/update-password", "with bad password but good newPassword", {
-    userId: credentials.userId,
-    password: "BadPassword",
-    newPassword: credentials.password,
-  });
+  apiCall = testGroup.newApiCall(
+    'POST',
+    '/update-password',
+    'with bad password but good newPassword',
+    {
+      userId: credentials.userId,
+      password: 'BadPassword',
+      newPassword: credentials.password,
+    },
+  );
   await apiCall.checkStatus([200]);
 
-  apiCall = testGroup.newApiCall("POST", "/update-password", "with correct credentials", {
+  apiCall = testGroup.newApiCall('POST', '/update-password', 'with correct credentials', {
     ...credentials,
-    newPassword: "NewPassword",
+    newPassword: 'NewPassword',
   });
   const status = await apiCall.checkStatus([200, 403]);
   if (status === 403) {
     const body = await apiCall.getJSON();
     if (body) {
-      apiCall.addBodyCheck("returns a 'message' if status is 403 - received " + body.message, !!body.message);
+      apiCall.addBodyCheck(
+        "returns a 'message' if status is 403 - received " + body.message,
+        !!body.message,
+      );
     }
   }
   if (status === 200) {
-    apiCall = testGroup.newApiCall("POST", "/update-password", "when using old credentials", {
+    apiCall = testGroup.newApiCall('POST', '/update-password', 'when using old credentials', {
       ...credentials,
-      newPassword: "SomeOtherNewPassword",
+      newPassword: 'SomeOtherNewPassword',
     });
     await apiCall.security().checkStatus([401]);
 
-    return { testGroup, userId: credentials.userId, password: "NewPassword" };
+    return { testGroup, userId: credentials.userId, password: 'NewPassword' };
   }
   return { testGroup, userId: credentials.userId, password: credentials.password };
 };

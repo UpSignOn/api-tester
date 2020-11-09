@@ -1,17 +1,16 @@
-const fetch = require("node-fetch");
-const fse = require("fs-extra");
-const moment = require("moment");
-const { get, post } = require("./helpers");
+const fse = require('fs-extra');
+const moment = require('moment');
+const { get, post } = require('./helpers');
 
 const queryParametersToString = (qp) => {
   if (qp)
     return (
-      "?" +
+      '?' +
       Object.keys(qp)
         .map((k) => `${k}=${qp[k]}`)
-        .join("&")
+        .join('&')
     );
-  else return "";
+  else return '';
 };
 
 class AllTests {
@@ -21,13 +20,13 @@ class AllTests {
   areAllTestsOK() {
     return !this.testGroups.some((testGroup) => {
       return !!testGroup.routeTests.some((routeTest) =>
-        routeTest.tests.some((test) => test.successStatus !== "SUCCESS")
+        routeTest.tests.some((test) => test.successStatus !== 'SUCCESS'),
       );
     });
   }
   getJSONReport() {
     return {
-      overallStatus: this.areAllTestsOK() ? "SUCCESS" : "FAIL",
+      overallStatus: this.areAllTestsOK() ? 'SUCCESS' : 'FAIL',
       details: this.testGroups.map((groupTest) => {
         return {
           groupTitle: groupTest.title,
@@ -50,18 +49,21 @@ class AllTests {
   }
   async logSummaryAndExit() {
     const globalSuccess = this.areAllTestsOK();
-    fse.ensureDirSync("./reports");
+    fse.ensureDirSync('./reports');
     const reportName =
-      "./reports/" + moment().format("YYYY-MM-DD-hh:mm:ss") + (globalSuccess ? "-SUCCESS" : "-FAIL") + ".json";
-    const fileContent = JSON.stringify(this.getJSONReport(), null, "  ");
+      './reports/' +
+      moment().format('YYYY-MM-DD-hh:mm:ss') +
+      (globalSuccess ? '-SUCCESS' : '-FAIL') +
+      '.json';
+    const fileContent = JSON.stringify(this.getJSONReport(), null, '  ');
     await fse.writeFile(reportName, fileContent);
     if (globalSuccess) {
       // display green
-      console.log("\x1b[32mALL TESTS PASSED!\x1b[0m");
+      console.log('\x1b[32mALL TESTS PASSED!\x1b[0m');
       process.exit(0);
     } else {
       // display red
-      console.log("\x1b[31mSOME TESTS FAILED!\x1b[0m");
+      console.log('\x1b[31mSOME TESTS FAILED!\x1b[0m');
       process.exit(1);
     }
   }
@@ -70,7 +72,7 @@ class AllTests {
 class TestGroup {
   constructor(title) {
     // Display Bold test group title
-    console.log("\n\n\x1b[1m", title, "\x1b[0m");
+    console.log('\n\n\x1b[1m', title, '\x1b[0m');
     this.title = title;
     this.routeTests = [];
   }
@@ -88,12 +90,12 @@ class RouteTest {
     this.method = method;
     this.route = route;
     this.context = context;
-    this.queryParameters = method === "GET" ? queryParametersToString(parameters) : null;
-    this.body = method === "POST" ? parameters : null;
+    this.queryParameters = method === 'GET' ? queryParametersToString(parameters) : null;
+    this.body = method === 'POST' ? parameters : null;
     this.tests = [];
 
-    if (this.method === "GET") console.log(`    query parameters: ${this.queryParameters}`);
-    if (this.method === "POST") console.log(`    body: ${JSON.stringify(this.body)}`);
+    if (this.method === 'GET') console.log(`    query parameters: ${this.queryParameters}`);
+    if (this.method === 'POST') console.log(`    body: ${JSON.stringify(this.body)}`);
   }
 
   addTest(testDescription) {
@@ -104,16 +106,16 @@ class RouteTest {
     this.tests.push(newTest);
     this.isNextTestImportantForSecurity = false;
 
-    let message = "    ";
+    let message = '    ';
     // display background blue
-    if (newTest.isSecurityCheck) message += "\x1b[46m- Security! -\x1b[0m ";
-    if (newTest.successStatus === "FAIL") {
+    if (newTest.isSecurityCheck) message += '\x1b[46m- Security! -\x1b[0m ';
+    if (newTest.successStatus === 'FAIL') {
       // display background red
       message += `\x1b[41m FAIL - ${newTest.title}\x1b[0m`;
       console.log(message);
       if (!!newTest.errorDetails) console.log(`        ${newTest.errorDetails}`);
     }
-    if (newTest.successStatus === "SUCCESS") {
+    if (newTest.successStatus === 'SUCCESS') {
       // display background green
       message += `\x1b[42m SUCCESS - ${newTest.title}\x1b[0m`;
       console.log(message);
@@ -125,12 +127,12 @@ class RouteTest {
   }
   async checkStatus(expectedStatuses) {
     try {
-      if (this.method === "GET") {
+      if (this.method === 'GET') {
         const req = await get(this.route + this.queryParameters);
         this.response = req.response;
         this.curl = req.curl;
       }
-      if (this.method === "POST") {
+      if (this.method === 'POST') {
         const req = await post(this.route, this.body);
         this.response = req.response;
         this.curl = req.curl;
@@ -139,41 +141,41 @@ class RouteTest {
 
       const successCondition = expectedStatuses.includes(this.response.status);
       this.addTest({
-        title: `Should return status ${expectedStatuses.join("|")}`,
-        successStatus: successCondition ? "SUCCESS" : "FAIL",
+        title: `Should return status ${expectedStatuses.join('|')}`,
+        successStatus: successCondition ? 'SUCCESS' : 'FAIL',
         errorDetails: successCondition ? null : `Actual status was ${this.response.status}.`,
       });
       return this.response.status;
     } catch (e) {
       console.error(e);
       this.addTest({
-        title: `Should return status ${expectedStatuses.join("|")}`,
-        successStatus: "FAIL",
+        title: `Should return status ${expectedStatuses.join('|')}`,
+        successStatus: 'FAIL',
         errorDetails: `Server could not be reached.`,
       });
     }
   }
   async getJSON() {
-    const testTitle = "Should return a JSON body";
+    const testTitle = 'Should return a JSON body';
     if (!this.response)
       this.addTest({
         title: testTitle,
-        successStatus: "FAIL",
-        errorDetails: "There was no response.",
+        successStatus: 'FAIL',
+        errorDetails: 'There was no response.',
       });
     try {
       this.responseBody = await this.response.json();
       this.addTest({
         title: testTitle,
-        successStatus: "SUCCESS",
+        successStatus: 'SUCCESS',
       });
       if (!this.responseBody) throw new Error();
       return this.responseBody;
     } catch {
       this.addTest({
         title: testTitle,
-        successStatus: "FAIL",
-        errorDetails: "There was a response but it was not JSON.",
+        successStatus: 'FAIL',
+        errorDetails: 'There was a response but it was not JSON.',
       });
       return null;
     }
@@ -182,7 +184,7 @@ class RouteTest {
   addBodyCheck(title, successCondition, errorDetails) {
     this.addTest({
       title,
-      successStatus: successCondition ? "SUCCESS" : "FAIL",
+      successStatus: successCondition ? 'SUCCESS' : 'FAIL',
       errorDetails,
     });
   }
