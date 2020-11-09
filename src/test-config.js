@@ -24,12 +24,20 @@ const testConfigResponse = async (testGroup, context, queryParameters) => {
       !body.fields.some((f) => body.fields.filter((g) => g.key === f.key).length !== 1),
     );
     apiCall.addBodyCheck(
-      "each field has a unique 'customLabel' if it has one",
+      'there are no two fields with same type and no variant (they would have the same name)',
       !body.fields.some(
-        (f) =>
-          !!f.customLabel &&
-          body.fields.filter((g) => g.customLabel === f.customLabel).length !== 1,
+        (f) => !f.variant && body.fields.filter((g) => g.type === f.type && !g.variant).length > 1,
       ),
+    );
+    apiCall.addBodyCheck(
+      "each field having variant 'custom' has a 'customLabel'",
+      !body.fields.some((f) => f.variant === 'custom' && !f.customLabel),
+    );
+    apiCall.addBodyCheck(
+      "each field has a unique 'customLabel' if it has one or if it has a variant 'custom'",
+      !body.fields
+        .filter((f) => !!f.customLabel || f.variant === 'custom')
+        .some((f) => body.fields.filter((g) => g.customLabel === f.customLabel).length !== 1),
     );
     apiCall.addBodyCheck(
       "each field has a unique 'variant' if it has one that is not 'custom'",
@@ -37,7 +45,7 @@ const testConfigResponse = async (testGroup, context, queryParameters) => {
         (f) =>
           !!f.variant &&
           f.variant !== 'custom' &&
-          body.fields.filter((g) => g.variant === f.variant).length !== 1,
+          body.fields.filter((g) => g.type === f.type && g.variant === f.variant).length !== 1,
       ),
     );
     apiCall.addBodyCheck(
