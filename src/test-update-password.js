@@ -15,12 +15,19 @@ module.exports = async function (credentials) {
   apiCall = testGroup.newApiCall("POST", "/update-password", "with missing newPassword", credentials);
   await apiCall.security().checkStatus([400, 401]);
 
-  apiCall = testGroup.newApiCall("POST", "/update-password", "with bad password", {
+  apiCall = testGroup.newApiCall("POST", "/update-password", "with bad password and bad newPassword", {
     userId: credentials.userId,
     password: "BadPassword",
-    newPassword: "NewPassword",
+    newPassword: "BadNewPassword",
   });
   await apiCall.security().checkStatus([401]);
+
+  apiCall = testGroup.newApiCall("POST", "/update-password", "with bad password but good newPassword", {
+    userId: credentials.userId,
+    password: "BadPassword",
+    newPassword: credentials.password,
+  });
+  await apiCall.checkStatus([200]);
 
   apiCall = testGroup.newApiCall("POST", "/update-password", "with correct credentials", {
     ...credentials,
@@ -36,7 +43,7 @@ module.exports = async function (credentials) {
   if (status === 200) {
     apiCall = testGroup.newApiCall("POST", "/update-password", "when using old credentials", {
       ...credentials,
-      newPassword: "NewPassword",
+      newPassword: "SomeOtherNewPassword",
     });
     await apiCall.security().checkStatus([401]);
 
