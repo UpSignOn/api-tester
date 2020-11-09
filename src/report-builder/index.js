@@ -49,11 +49,13 @@ class AllTests {
     };
   }
   async logSummaryAndExit() {
+    const globalSuccess = this.areAllTestsOK();
     fse.ensureDirSync("./reports");
-    const reportName = "./reports/" + moment().format("YYYY-MM-DD-hh:mm:ss") + ".json";
+    const reportName =
+      "./reports/" + moment().format("YYYY-MM-DD-hh:mm:ss") + (globalSuccess ? "-SUCCESS" : "-FAIL") + ".json";
     const fileContent = JSON.stringify(this.getJSONReport(), null, "  ");
     await fse.writeFile(reportName, fileContent);
-    if (this.areAllTestsOK()) {
+    if (globalSuccess) {
       // display green
       console.log("\x1b[32mALL TESTS PASSED!\x1b[0m");
       process.exit(0);
