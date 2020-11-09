@@ -37,7 +37,10 @@ const checkConversionResult = async (apiCall, body, config) => {
         switch (userData.type) {
           case "firstname":
           case "lastname":
-            apiCall.addBodyCheck(userData.key + " has a string value", typeof userData.value === "string");
+            apiCall.addBodyCheck(
+              userData.key + " has a non empty string value",
+              typeof userData.value === "string" && userData.value.length > 0
+            );
             break;
           case "title":
             apiCall.addBodyCheck(
@@ -52,10 +55,16 @@ const checkConversionResult = async (apiCall, body, config) => {
             );
             break;
           case "email":
-            apiCall.addBodyCheck(userData.key + " has an object value containing 'address'", !!userData.value.address);
+            apiCall.addBodyCheck(
+              userData.key + " has an object value containing a non-empty 'address'",
+              typeof userData.value.address === "string" && userData.value.address.length > 0
+            );
             break;
           case "phoneNumber":
-            apiCall.addBodyCheck(userData.key + " has an object value containing 'number'", !!userData.value.number);
+            apiCall.addBodyCheck(
+              userData.key + " has an object value containing a non-empty 'number'",
+              typeof userData.value.number === "string" && userData.value.number.length > 0
+            );
             apiCall.addBodyCheck(userData.key + " 'number' starts with '+'", userData.value.number.startsWith("+"));
             break;
           case "postalAddress":
@@ -64,13 +73,23 @@ const checkConversionResult = async (apiCall, body, config) => {
               "in " +
                 userData.key +
                 " all addresses contain at least 'streetAddress', 'city', 'postalCode' and 'country'",
-              !userData.value.some((a) => !a.streetAddress || !a.city || !a.postalCode || !a.country)
+              !userData.value.some(
+                (a) =>
+                  typeof a.streetAddress !== "string" ||
+                  !a.streetAddress ||
+                  typeof a.city !== "string" ||
+                  !a.city ||
+                  typeof a.postalCode !== "string" ||
+                  !a.postalCode ||
+                  typeof a.country !== "string" ||
+                  !a.country
+              )
             );
             break;
           case "iban":
             apiCall.addBodyCheck(
               userData.key + " has an object value containing at least 'IBAN'",
-              !!userData.value.IBAN
+              typeof userData.value.IBAN === "string" && userData.value.IBA.length > 0
             );
             break;
           case "newsletterConsent":
