@@ -52,7 +52,7 @@ class AllTests {
     fse.ensureDirSync('./reports');
     const reportName =
       './reports/' +
-      moment().format('YYYY-MM-DD-hh:mm:ss') +
+      moment().format('YYYY-MM-DD-HH:mm:ss') +
       (globalSuccess ? '-SUCCESS' : '-FAIL') +
       '.json';
     const fileContent = JSON.stringify(this.getJSONReport(), null, '  ');
