@@ -48,13 +48,18 @@ const testConfigResponse = async (testGroup, context, queryParameters) => {
           body.fields.filter((g) => g.type === f.type && g.variant === f.variant).length !== 1,
       ),
     );
+
     apiCall.addBodyCheck(
       'no field has non-standard object keys',
       !body.fields.some((f) =>
-        Object.keys(f).some(
-          (k) => !['type', 'key', 'mandatory', 'variant', 'customLabel'].includes(k),
-        ),
+        Object.keys(f).some((k) => {
+          if (f.type !== 'postalAddress')
+            return !['type', 'key', 'mandatory', 'variant', 'customLabel'].includes(k);
+          else
+            return !['type', 'key', 'mandatory', 'variant', 'customLabel', 'maxSize'].includes(k);
+        }),
       ),
+      "at least one field contains a key that is not 'type' nor 'key' nor 'mandatory' nor 'variant' nor 'customLabel' nor 'maxSize'",
     );
     apiCall.addBodyCheck("result contains 'legalTerms'", !!body.legalTerms);
     if (body.legalTerms) {

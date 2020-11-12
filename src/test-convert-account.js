@@ -83,7 +83,7 @@ const checkConversionResult = async (apiCall, body, config) => {
             apiCall.addBodyCheck(
               'in ' +
                 userData.key +
-                " all addresses contain at least 'streetAddress', 'city', 'postalCode' and 'country'",
+                " all addresses contain at least 'streetAddress', 'city' and 'postalCode'",
               !userData.value.some(
                 (a) =>
                   typeof a.streetAddress !== 'string' ||
@@ -91,9 +91,7 @@ const checkConversionResult = async (apiCall, body, config) => {
                   typeof a.city !== 'string' ||
                   !a.city ||
                   typeof a.postalCode !== 'string' ||
-                  !a.postalCode ||
-                  typeof a.country !== 'string' ||
-                  !a.country,
+                  !a.postalCode,
               ),
             );
             break;

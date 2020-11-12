@@ -32,6 +32,7 @@ const testButtonConfigResponse = async (testGroup, queryParameters, config) => {
       !body.fields.some((f) =>
         Object.keys(f).some((k) => !['type', 'key', 'mandatory'].includes(k)),
       ),
+      "at least one field contains a key that is not 'type' nor 'key' nor 'mandatory'",
     );
     apiCall.addBodyCheck(
       "'forceFormDisplay' is of type boolean if it is set",
